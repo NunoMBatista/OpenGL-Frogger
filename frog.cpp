@@ -4,9 +4,9 @@
 Frog::Frog(ofVec3f dimensions, ofVec3f position)
     : dimensions(dimensions), position(position) {
     // Body proportions
-    body_w = dimensions.x;
+    body_w = dimensions.x * 0.5;
     body_h = dimensions.y * 0.20;
-    body_l = dimensions.z;
+    body_l = dimensions.z * 0.5;
 
     // Legs proportions
     leg_w = body_w * 0.2;
@@ -27,12 +27,16 @@ Frog::Frog(ofVec3f dimensions, ofVec3f position)
     eye_w = head_w * 0.3;
     eye_h = dimensions.y * 0.2;
     eye_l = head_l * 0.3;
+
+    rotation = 0;
 }
 
 // Draw frog
 void Frog::draw(){
+    // Draw the frog
     glPushMatrix();
         glTranslatef(position.x, position.y, position.z);  // Use position parameters
+        glRotatef(rotation, 0, 1, 0); // Rotate the frog in the Y axis
         draw_body();
         draw_legs();
         draw_neck();
@@ -102,7 +106,7 @@ void Frog::draw_tongue() {
         glTranslatef(0, body_h*0.5 + neck_h, 0);
         glTranslatef(0, head_h*0.5, 0);
         glTranslatef(0, 0, head_l*0.5);
-        glScalef(head_w*0.5, head_h*0.2, head_l*0.5);
+        glScalef(head_w*0.5, head_h*0.2, head_l*0.3);
         cube_unit(1, 0, 0);
     glPopMatrix();
     glColor3f(0, 1, 0);
@@ -130,4 +134,21 @@ void Frog::draw_eye(GLfloat x) {
         glScalef(eye_w * 0.5, eye_h * 0.5, eye_l * 0.5);
         cube_unit(0, 0, 0);
     glPopMatrix();
+}
+
+void Frog::turn(Direction direction) {
+    switch(direction){
+        case UP:
+            rotation = 0;
+            break;
+        case DOWN:
+            rotation = 180;
+            break;
+        case LEFT:
+            rotation = -90;
+            break;
+        case RIGHT:
+            rotation = 90;
+            break;
+    }
 }

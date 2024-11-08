@@ -4,6 +4,11 @@
 
 class Frog;
 
+enum CameraMode{
+    ORTHO_TOP_DOWN,
+    PERSPECTIVE_PLAYER
+};
+
 class Game{
     public: 
         Game();
@@ -18,15 +23,15 @@ class Game{
 
         void key_released(int key);
 
-
+        ofVec3f get_grid_position(int row, int column);
+        float get_movement_progress();
+        bool is_valid(int row, int column);
 
     private: 
         /*
         ******* Camera definitions ******* 
         */
-        enum CameraMode{
-            PERSPECTIVE_TOP_DOWN
-        };
+
 
         // Distance to scene center
         GLfloat cam_dist;
@@ -48,9 +53,19 @@ class Game{
         ofVec3f player_dimensions;
 
         ofVec3f player_movement;
+
+        // Player grid position
+        int player_row;
+        int player_column;
+
+        // Movement interpolation variables
+        ofVec3f start_position; // Position of the player before movement
+        float movement_timer; // Timer for movement interpolation
+        float movement_duration; // Duration of the movement
         /*
         ******* End of player definitions ******* 
         */
+
 
         /*
         ******* Frog definitions ******* 
@@ -63,11 +78,9 @@ class Game{
         /*
         ******* Grid definitions ******* 
         */
-        int grid_rows = 10;
-        int grid_columns = 10;
+        int grid_rows = 15;
+        int grid_columns = 15;
 
-        ofVec3f get_grid_postion(int row, int column);
-        bool is_valid(int row, int column);
 
         GLfloat grid_size = 50; // Size of each grid cell
         bool is_moving = false; // Is the player moving?

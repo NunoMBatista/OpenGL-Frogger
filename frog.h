@@ -2,9 +2,15 @@
 
 //#include "ofApp.h"
 #include "ofMain.h"
-#include "cg_extras.h"
 #include "cg_drawing_extras.h"
 #include "cg_cam_extras.h"
+
+enum Direction{
+    UP,
+    DOWN,
+    LEFT,
+    RIGHT
+};
 
 class Frog{
     public:
@@ -29,8 +35,12 @@ class Frog{
         // Below body
         void draw_leg(GLfloat x, GLfloat y, GLfloat z);
         void draw_legs();
-        
-        
+
+        // Turn the frog to a specific direction
+        void turn(Direction direction);
+
+        GLfloat rotation;
+
         ofVec3f dimensions;  // New member variable for dimensions
         ofVec3f position;    // New member variable for position
 
