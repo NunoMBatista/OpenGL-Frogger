@@ -2,6 +2,7 @@
 #define MODELS_H
 
 #include "ofMain.h"
+#include "ofApp.h"
 
 inline void draw_frog(GLfloat f_width, GLfloat f_height, GLfloat f_length){
     GLfloat body_w = f_width;

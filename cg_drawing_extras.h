@@ -1,8 +1,8 @@
 ﻿#pragma once
 
-#include "ofMain.h"
-#include "cg_extras.h"
-
+// #include "ofMain.h"
+// #include "cg_extras.h"
+#include "ofApp.h"
 
 //desenha ponto 3D na origem
 inline void drawPoint() {

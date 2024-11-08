@@ -1,50 +1,28 @@
 #include "ofApp.h"
 
+
 //--------------------------------------------------------------
 void ofApp::setup(){
-    glEnable(GL_DEPTH_TEST);
 }
 
 //--------------------------------------------------------------
 void ofApp::update(){
-
+    game.update();
 }
 
 //--------------------------------------------------------------
 void ofApp::draw(){
-    glMatrixMode(GL_PROJECTION);
-    glLoadIdentity();   
-
-    perspective(60, 10, 1000);
-    //glOrtho(-800, 800, -800, 800, -10000, 10000);
-
-    glMatrixMode(GL_MODELVIEW);
-    glLoadIdentity();
-    // lookat(
-    //     0, 0, -1, 
-    //     0, 0, 0,
-    //     0, 1, 0
-    // );
-
-    lookat(
-        //0, 0, cam_dist, 
-        gw()/2, gh()/2, cam_dist, 
-        0, 0, 0,
-        0, 1, 0
-    );
-
-    draw_frog(300, 400, 320);
-
+    game.draw();
 }
 
 //--------------------------------------------------------------
 void ofApp::keyPressed(int key){
-
+    game.key_pressed(key);
 }
 
 //--------------------------------------------------------------
 void ofApp::keyReleased(int key){
-
+    game.key_released(key);
 }
 
 //--------------------------------------------------------------

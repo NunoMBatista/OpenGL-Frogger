@@ -4,6 +4,8 @@
 
 #include "ofMain.h"
 #include "cg_extras.h"
+//#include "ofApp.h"
+
 
 //calcula o frustum com base em theta, alpha e beta
 inline void perspective(GLfloat theta, GLfloat alpha, GLfloat beta) {
@@ -15,7 +17,7 @@ inline void perspective(GLfloat theta, GLfloat alpha, GLfloat beta) {
 	GLfloat farClip = d * beta;
 	GLfloat ymax = nearClip * tan;
 	GLfloat xmax = (gw() / gh()) * ymax;
-	glFrustum(-xmax, xmax, -ymax, ymax, nearClip, farClip);
+	glFrustum(xmax, -xmax, -ymax, ymax, nearClip, farClip);
 }
 
 
@@ -37,11 +39,11 @@ inline void lookat(
 
 
 	ofVec3f N = cam - target;
-	N = N.normalized();
+	N = N.getNormalized();
 	ofVec3f U = cross(up, N);
-	U = U.normalized();
+	U = U.getNormalized();
 	ofVec3f V = cross(N, U);
-	V = V.normalized();
+	V = V.getNormalized();
 
 	/*GLfloat camTransformMatrix[4][4] = {
 		{1, 0, 0, 0},

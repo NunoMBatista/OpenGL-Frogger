@@ -1,11 +1,7 @@
 #pragma once
 
 #include "ofMain.h"
-#include "cg_extras.h"
-#include "cg_drawing_extras.h"
-#include "cg_cam_extras.h"
-#include "models.h"
-
+#include "game_manager.h"
 
 class ofApp : public ofBaseApp{
 	public:
@@ -24,8 +20,6 @@ class ofApp : public ofBaseApp{
 		void windowResized(int w, int h);
 		void dragEvent(ofDragInfo dragInfo);
 		void gotMessage(ofMessage msg);
-
-		GLfloat theta_fov = 60;
-		GLfloat cam_dist = (gh()/2)/tan((theta_fov/2)*(PI/180));
-		
+	private: 
+		Game game;
 };
