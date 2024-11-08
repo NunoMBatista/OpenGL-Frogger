@@ -29,13 +29,38 @@ Frog::Frog(ofVec3f dimensions, ofVec3f position)
     eye_l = head_l * 0.3;
 
     rotation = 0;
+
+    // Initialize jump variables
+    is_jumping = false;
+    jump_progress = 0.0f;
+    jump_duration = 0.2f;  // Duration of the jump in seconds
+    jump_height = dimensions.y * 0.5f;  // Adjust as needed
+}
+
+void Frog::update(float delta_time) {
+    if(is_jumping) {
+        jump_progress += delta_time;
+        if(jump_progress >= jump_duration) {
+            jump_progress = jump_duration;
+            is_jumping = false;
+        }
+    }
 }
 
 // Draw frog
 void Frog::draw(){
     // Draw the frog
     glPushMatrix();
-        glTranslatef(position.x, position.y, position.z);  // Use position parameters
+        glTranslatef(position.x, position.y, position.z);
+
+        // Apply vertical offset for jump
+        float y_offset = 0.0f;
+        if(is_jumping) {
+            float t = jump_progress / jump_duration;
+            y_offset = jump_height * sin(PI * t);
+        }
+        glTranslatef(0, y_offset, 0);
+
         glRotatef(rotation, 0, 1, 0); // Rotate the frog in the Y axis
         draw_body();
         draw_legs();
@@ -136,8 +161,10 @@ void Frog::draw_eye(GLfloat x) {
     glPopMatrix();
 }
 
-void Frog::turn(Direction direction) {
-    switch(direction){
+void Frog::turn(Direction new_direction) {
+    direction = new_direction;
+
+    switch(new_direction){
         case UP:
             rotation = 0;
             break;

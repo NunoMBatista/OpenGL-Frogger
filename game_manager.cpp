@@ -33,7 +33,7 @@ Game::Game(){
     target_position = player_position;
     is_moving = false;
     movement_timer = 0;
-    movement_duration = 0.05; // Duration of movement in seconds
+    movement_duration = 0.2; // Duration of movement in seconds
 }
 
 void Game::camera(){
@@ -55,9 +55,9 @@ void Game::camera(){
         glLoadIdentity();
     
         lookat(
-            get_grid_position(0, grid_columns/2).x,   cam_dist,    player_position.z, 
+            get_grid_position(0, grid_columns/2).x,   cam_dist,          player_position.z, 
             get_grid_position(0, grid_columns/2).x,          0,          player_position.z,
-            0,          0,                          1
+                                                 0,          0,                          1
         );
     }
     if(camera_mode == PERSPECTIVE_PLAYER){
@@ -69,21 +69,43 @@ void Game::camera(){
         lookat(
             player_position.x,   player_position.y + 200,    player_position.z - 300, 
             player_position.x,          player_position.y,          player_position.z,
-            0,          0,                          1
+            0,          1,                          0
+        );
+    }
+
+    if(camera_mode == FIRST_PERSON){
+        perspective(theta_fov*1.5, 10, 1000);
+
+
+        glMatrixMode(GL_MODELVIEW);
+        glLoadIdentity();
+    
+        int direction = frog->rotation;
+        ofVec3f offset = ofVec3f(0, 0, 0);
+        if(direction == 0) offset = ofVec3f(0, 0, 100);
+        if(direction == 180) offset = ofVec3f(0, 0, -100);
+        if(direction == -90) offset = ofVec3f(-100, 0, 0);
+        if(direction == 90) offset = ofVec3f(100, 0, 0);
+
+        lookat(
+            player_position.x,                          player_position.y + 100,                     player_position.z, 
+            player_position.x + offset.x,                     player_position.y + 100,          player_position.z + offset.z,
+            0,                                                                1,                                     0
         );
     }
 
 }
 
 // Update the game state
-void Game::update(){
-    if(is_moving) {
-        // Update movement timer with the time since the last frame in order to get frame rate independent movement
-        movement_timer += ofGetLastFrameTime();
+void Game::update() {
+    float delta_time = ofGetLastFrameTime();
 
-        // The movement progress goes from 0 to 1
+    if(is_moving) {
+        // Update movement timer
+        movement_timer += delta_time;
+
         float progress = get_movement_progress();
-        
+
         if(progress >= 1.0f){
             // Movement complete
             player_position = target_position;
@@ -91,11 +113,14 @@ void Game::update(){
             movement_timer = 0;
         } 
         else {
-            // Linear interpolation
+            // Interpolate position
             player_position = start_position.getInterpolated(target_position, progress);
         }
     }
+
+    // Update the frog's position and animation
     frog->position = player_position;
+    frog->update(delta_time);
 }
 
 float Game::get_movement_progress(){
@@ -122,6 +147,8 @@ void Game::draw(){
             glPopMatrix();
         }
     }
+
+    cout << frog->direction << endl; 
 }
 
 // Key pressed event
@@ -132,32 +159,107 @@ void Game::key_pressed(int key){
     int new_column = player_column;
 
     switch(key){
-        case 'w':
-        case 'W':
-            new_row += 1;
-            frog->turn(UP);
-            break;
-        case 's':
-        case 'S':
-            if(new_row > 0) new_row -= 1;
-            frog->turn(DOWN);
-            break;
-        case 'a':
-        case 'A':
-            if(new_column > 0) new_column -= 1;
-            frog->turn(LEFT);
-            break;
-        case 'd':
-        case 'D':
-            new_column += 1;
-            frog->turn(RIGHT);
-            break;
         case '1':
             camera_mode = ORTHO_TOP_DOWN;
+            return;
             break;
         case '2':
             camera_mode = PERSPECTIVE_PLAYER;
+            return;
             break;
+        case '3':
+            camera_mode = FIRST_PERSON;
+            if(frog->direction == UP) frog->eye_vector = ofVec3f(0, 0, 1);
+            if(frog->direction == DOWN) frog->eye_vector = ofVec3f(0, 0, -1);
+            if(frog->direction == LEFT) frog->eye_vector = ofVec3f(-1, 0, 0);
+            if(frog->direction == RIGHT) frog->eye_vector = ofVec3f(1, 0, 0);
+            return;
+            break;
+    }
+
+    if(camera_mode == FIRST_PERSON){
+        // Change the frog's direction relative to the camera
+        if(key == 'w' || key == 'W'){
+            if(frog->direction == UP){
+                new_row += 1;
+            }
+            else if(frog->direction == DOWN){
+                new_row -= 1;
+            }
+            else if(frog->direction == LEFT){
+                new_column -= 1;
+            }
+            else if(frog->direction == RIGHT){
+                new_column += 1;
+            }
+        }
+        if(key == 'a' || key == 'A'){
+            if(frog->direction == UP){
+                frog->turn(LEFT);
+            }
+            else if(frog->direction == DOWN){
+                frog->turn(RIGHT);
+            }
+            else if(frog->direction == LEFT){
+                frog->turn(DOWN);
+            }
+            else if(frog->direction == RIGHT){
+                frog->turn(UP);
+            }
+        }
+        if(key == 'd' || key == 'D'){
+            if(frog->direction == UP){
+                frog->turn(RIGHT);
+            }
+            else if(frog->direction == DOWN){
+                frog->turn(LEFT);
+            }
+            else if(frog->direction == LEFT){
+                frog->turn(UP);
+            }
+            else if(frog->direction == RIGHT){
+                frog->turn(DOWN);
+            }
+        }
+        if(key == 's' || key == 'S'){
+            if(frog->direction == UP){
+                new_row -= 1;
+            }
+            if(frog->direction == DOWN){
+                new_row += 1;
+            }
+            if(frog->direction == LEFT){
+                new_column += 1;
+            }
+            if(frog->direction == RIGHT){
+                new_column -= 1;
+            }
+        }
+    }
+    
+    else{
+        switch(key){
+            case 'w':
+            case 'W':
+                new_row += 1;
+                frog->turn(UP);
+                break;
+            case 's':
+            case 'S':
+                if(new_row > 0) new_row -= 1;
+                frog->turn(DOWN);
+                break;
+            case 'a':
+            case 'A':
+                if(new_column > 0) new_column -= 1;
+                frog->turn(LEFT);
+                break;
+            case 'd':
+            case 'D':
+                new_column += 1;
+                frog->turn(RIGHT);
+                break;
+        }
     }
 
     // Check if the new position is valid
@@ -173,6 +275,10 @@ void Game::key_pressed(int key){
         // Start movement
         is_moving = true;
         movement_timer = 0;
+
+        // Start frog jumping animation
+        frog->is_jumping = true;
+        frog->jump_progress = 0.0f;
     }
 }
 

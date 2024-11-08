@@ -6,7 +6,8 @@ class Frog;
 
 enum CameraMode{
     ORTHO_TOP_DOWN,
-    PERSPECTIVE_PLAYER
+    PERSPECTIVE_PLAYER,
+    FIRST_PERSON
 };
 
 class Game{
@@ -85,4 +86,7 @@ class Game{
         GLfloat grid_size = 50; // Size of each grid cell
         bool is_moving = false; // Is the player moving?
         ofVec3f target_position; // Where the player is moving to
+
+        const float ROTATION_SPEED = 90.0f; // Degrees per key press
+
 };

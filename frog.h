@@ -39,10 +39,21 @@ class Frog{
         // Turn the frog to a specific direction
         void turn(Direction direction);
 
+        // Update function to handle jumping animation
+        void update(float delta_time);
+
+        ofVec3f eye_vector;        
+        Direction direction;
         GLfloat rotation;
 
         ofVec3f dimensions;  // New member variable for dimensions
         ofVec3f position;    // New member variable for position
+
+        // Variables for jumping animation
+        bool is_jumping;
+        float jump_progress;
+        float jump_duration;
+        float jump_height;
 
         GLfloat body_w;
         GLfloat body_h;
