@@ -1,299 +1,231 @@
+#include <vector>
 #include "game_manager.h"
 #include "cg_cam_extras.h"
-
 #include "frog.h"
+#include "car.h"
 
-Game::Game(){
+Game::Game() {
     glEnable(GL_DEPTH_TEST); // Make it possible to see the depth of the objects
-    
-    theta_fov = 60;
 
-    // Distance to scene center
-    cam_dist = (gh()/2)/tan((theta_fov/2)*(PI/180));
-
-    // Default camera mode
+    cam = new Camera(60.0f, global.grid->get_grid_position(global.grid_rows / 2, global.grid_columns / 2)); 
     camera_mode = ORTHO_TOP_DOWN;
 
     // Player position
-    player_position = ofVec3f(0, 0, 0);
-    player_dimensions = ofVec3f(46, 80, 56);
-
-    // Player velocity
-    player_movement = ofVec3f(0, 0, 0);
+    player_position = global.grid->get_grid_position(0, global.grid_columns / 2); // Start at middle of first row
+    player_dimensions = ofVec3f(40, 80, 50);
 
     // Create the frog
     frog = new Frog(player_dimensions, player_position);
 
-    grid_size = 50; // Each grid cell is 50 units
-
-    // Initialize player at grid cell (0, 0)
+    // Initialize player grid position
     player_row = 0;
-    player_column = grid_columns/2;
-    player_position = get_grid_position(player_row, player_column);
+    player_column = global.grid_columns / 2;
+    player_position = global.grid->get_grid_position(player_row, player_column);
     target_position = player_position;
-    is_moving = false;
-    movement_timer = 0;
-    movement_duration = 0.2; // Duration of movement in seconds
+
+    // Setup the camera
+    cam->setup(player_position, global.grid_columns);
+
+    cars.push_back(new Car(ofVec3f(global.grid_size / 2, global.grid_size / 2, global.grid_size / 2), global.grid->get_grid_position(1, 1), ofVec3f(-1, 0, 0)));
+    cars.push_back(new Car(ofVec3f(global.grid_size / 2, global.grid_size / 2, global.grid_size / 2), global.grid->get_grid_position(1, 5), ofVec3f(-1, 0, 0)));
+    cars.push_back(new Car(ofVec3f(global.grid_size / 2, global.grid_size / 2, global.grid_size / 2), global.grid->get_grid_position(1, 9), ofVec3f(-1, 0, 0)));
+
 }
 
-void Game::camera(){
-    glMatrixMode(GL_PROJECTION);
-    glLoadIdentity();
-
-
-    /*
-        Perspective top down axis
-        X: Right
-        Z: Up
-    */
-    if(camera_mode == ORTHO_TOP_DOWN){
-        
-        glOrtho(gw()/2, -gw()/2, -gh()/2, gh()/2, 10, 1000);
-        //perspective(theta_fov, 10, 1000);
-
-        glMatrixMode(GL_MODELVIEW);
-        glLoadIdentity();
-    
-        lookat(
-            get_grid_position(0, grid_columns/2).x,   cam_dist,          player_position.z, 
-            get_grid_position(0, grid_columns/2).x,          0,          player_position.z,
-                                                 0,          0,                          1
-        );
+Game::~Game() {
+    delete cam;
+    delete frog;
+    for(auto car: cars){
+        delete car;
     }
-    if(camera_mode == PERSPECTIVE_PLAYER){
-        perspective(theta_fov, 10, 1000);
-
-        glMatrixMode(GL_MODELVIEW);
-        glLoadIdentity();
-    
-        lookat(
-            player_position.x,   player_position.y + 200,    player_position.z - 300, 
-            player_position.x,          player_position.y,          player_position.z,
-            0,          1,                          0
-        );
+    for(auto dead_frog: dead_frogs){
+        delete dead_frog;
     }
+}
 
-    if(camera_mode == FIRST_PERSON){
-        perspective(theta_fov*1.5, 10, 1000);
-
-
-        glMatrixMode(GL_MODELVIEW);
-        glLoadIdentity();
-    
-        int direction = frog->rotation;
-        ofVec3f offset = ofVec3f(0, 0, 0);
-        if(direction == 0) offset = ofVec3f(0, 0, 100);
-        if(direction == 180) offset = ofVec3f(0, 0, -100);
-        if(direction == -90) offset = ofVec3f(-100, 0, 0);
-        if(direction == 90) offset = ofVec3f(100, 0, 0);
-
-        lookat(
-            player_position.x,                          player_position.y + 100,                     player_position.z, 
-            player_position.x + offset.x,                     player_position.y + 100,          player_position.z + offset.z,
-            0,                                                                1,                                     0
-        );
-    }
-
+void Game::apply_camera() { 
+    cam->apply(camera_mode, player_position, frog); 
 }
 
 // Update the game state
 void Game::update() {
     float delta_time = ofGetLastFrameTime();
+    frog->update(delta_time);
+    cam->update(delta_time, player_position);
 
-    if(is_moving) {
-        // Update movement timer
-        movement_timer += delta_time;
-
-        float progress = get_movement_progress();
-
-        if(progress >= 1.0f){
-            // Movement complete
-            player_position = target_position;
-            is_moving = false;
-            movement_timer = 0;
-        } 
-        else {
-            // Interpolate position
-            player_position = start_position.getInterpolated(target_position, progress);
+    for(auto dead_frog: dead_frogs){
+        if(dead_frog->is_alive){
+            dead_frog->update(delta_time);
+        }
+        else{
+            // Remove the frog from the dead_frogs vector
+            dead_frogs.erase(std::find(dead_frogs.begin(), dead_frogs.end(), dead_frog), dead_frogs.end());
+            // Free memory
+            delete dead_frog;
         }
     }
 
-    // Update the frog's position and animation
-    frog->position = player_position;
-    frog->update(delta_time);
-}
+    for(auto car : cars) {
+        car->update();
+    }
 
-float Game::get_movement_progress(){
-    // Linear interpolation
-    return movement_timer / movement_duration;
+    for(auto car: cars){
+        if(check_collision(frog->position, frog->dimensions, car->position, car->dimensions)){
+            // Copy the frog to the dead_frogs vector
+            Frog* dead_frog = new Frog(*frog);
+            dead_frog->explosion();
+            dead_frogs.push_back(dead_frog);
+
+            // Reset the player frog
+            player_position = global.grid->get_grid_position(0, global.grid_columns / 2);
+            frog = new Frog(player_dimensions, player_position);
+            player_row = 0;
+            player_column = global.grid_columns / 2;
+        }
+    }
+
 }
 
 // Draw the main game scene
 void Game::draw(){
-    camera();
+    apply_camera(); 
     frog->draw();
 
-    // Draw the floor
-    ofSetColor(0, 0, 0);
-
-    // Draw grid
-    for(int i = 0; i < grid_rows; i++){
-        for(int j = 0; j < grid_columns; j++){
-            ofVec3f position = get_grid_position(i, j);
-            glPushMatrix();
-                glTranslatef(position.x, position.y, position.z);
-                glScalef(grid_size, 1, grid_size);
-                cube_unit_outline();
-            glPopMatrix();
+    for(auto dead_frog: dead_frogs){
+        if(dead_frog->is_alive){
+            dead_frog->draw();
         }
     }
 
-    cout << frog->direction << endl; 
+    for(auto car: cars){
+        car->draw();
+    }
+
+    global.grid->draw();
+
 }
 
-// Key pressed event
-void Game::key_pressed(int key){
-    if(is_moving) return; // Ignore input while moving
-
-    int new_row = player_row;
-    int new_column = player_column;
-
-    switch(key){
-        case '1':
-            camera_mode = ORTHO_TOP_DOWN;
-            return;
-            break;
-        case '2':
-            camera_mode = PERSPECTIVE_PLAYER;
-            return;
-            break;
-        case '3':
-            camera_mode = FIRST_PERSON;
-            if(frog->direction == UP) frog->eye_vector = ofVec3f(0, 0, 1);
-            if(frog->direction == DOWN) frog->eye_vector = ofVec3f(0, 0, -1);
-            if(frog->direction == LEFT) frog->eye_vector = ofVec3f(-1, 0, 0);
-            if(frog->direction == RIGHT) frog->eye_vector = ofVec3f(1, 0, 0);
-            return;
-            break;
+void Game::move_forward() {
+    switch(frog->direction) {
+        case UP:    try_move(player_row + 1, player_column); break;
+        case DOWN:  try_move(player_row - 1, player_column); break;
+        case LEFT:  try_move(player_row, player_column - 1); break;
+        case RIGHT: try_move(player_row, player_column + 1); break;
     }
+}
 
-    if(camera_mode == FIRST_PERSON){
-        // Change the frog's direction relative to the camera
-        if(key == 'w' || key == 'W'){
-            if(frog->direction == UP){
-                new_row += 1;
-            }
-            else if(frog->direction == DOWN){
-                new_row -= 1;
-            }
-            else if(frog->direction == LEFT){
-                new_column -= 1;
-            }
-            else if(frog->direction == RIGHT){
-                new_column += 1;
-            }
-        }
-        if(key == 'a' || key == 'A'){
-            if(frog->direction == UP){
-                frog->turn(LEFT);
-            }
-            else if(frog->direction == DOWN){
-                frog->turn(RIGHT);
-            }
-            else if(frog->direction == LEFT){
-                frog->turn(DOWN);
-            }
-            else if(frog->direction == RIGHT){
-                frog->turn(UP);
-            }
-        }
-        if(key == 'd' || key == 'D'){
-            if(frog->direction == UP){
-                frog->turn(RIGHT);
-            }
-            else if(frog->direction == DOWN){
-                frog->turn(LEFT);
-            }
-            else if(frog->direction == LEFT){
-                frog->turn(UP);
-            }
-            else if(frog->direction == RIGHT){
-                frog->turn(DOWN);
-            }
-        }
-        if(key == 's' || key == 'S'){
-            if(frog->direction == UP){
-                new_row -= 1;
-            }
-            if(frog->direction == DOWN){
-                new_row += 1;
-            }
-            if(frog->direction == LEFT){
-                new_column += 1;
-            }
-            if(frog->direction == RIGHT){
-                new_column -= 1;
-            }
-        }
+void Game::move_backward() {
+    switch(frog->direction) {
+        case UP:    try_move(player_row - 1, player_column); break;
+        case DOWN:  try_move(player_row + 1, player_column); break;
+        case LEFT:  try_move(player_row, player_column + 1); break;
+        case RIGHT: try_move(player_row, player_column - 1); break;
     }
-    
-    else{
-        switch(key){
-            case 'w':
-            case 'W':
-                new_row += 1;
-                frog->turn(UP);
-                break;
-            case 's':
-            case 'S':
-                if(new_row > 0) new_row -= 1;
-                frog->turn(DOWN);
-                break;
-            case 'a':
-            case 'A':
-                if(new_column > 0) new_column -= 1;
-                frog->turn(LEFT);
-                break;
-            case 'd':
-            case 'D':
-                new_column += 1;
-                frog->turn(RIGHT);
-                break;
-        }
-    }
+}
 
-    // Check if the new position is valid
-    if(is_valid(new_row, new_column)){
-        // Save the start and target positions
-        start_position = player_position;
-        target_position = get_grid_position(new_row, new_column);
-        
-        // Update player grid position
+// Turn left in first person mode
+void Game::turn_left() {
+    Direction new_direction = UP;
+    switch(frog->direction) {
+        case UP:    new_direction = LEFT; break;
+        case DOWN:  new_direction = RIGHT; break;
+        case LEFT:  new_direction = DOWN; break;
+        case RIGHT: new_direction = UP; break;
+    }
+    frog->turn(new_direction);
+}
+
+// Turn right in first person mode
+void Game::turn_right() {
+    Direction new_direction = UP;
+    switch(frog->direction) {
+        case UP:    new_direction = RIGHT; break;
+        case DOWN:  new_direction = LEFT; break;
+        case LEFT:  new_direction = UP; break;
+        case RIGHT: new_direction = DOWN; break;
+    }
+    frog->turn(new_direction);
+}
+
+void Game::try_move(int new_row, int new_column) {
+    if(global.grid->is_valid(new_row, new_column) && !frog->is_moving) {
+        ofVec3f new_position = global.grid->get_grid_position(new_row, new_column);
+        frog->start_move(player_position, new_position);
         player_row = new_row;
         player_column = new_column;
-        
-        // Start movement
-        is_moving = true;
-        movement_timer = 0;
+        player_position = new_position;
+    }
+}
 
-        // Start frog jumping animation
-        frog->is_jumping = true;
-        frog->jump_progress = 0.0f;
+void Game::key_pressed(int key) {
+    if(frog->is_moving || frog->is_exploding) return;
+    
+    switch(key) {
+        case '1': 
+            camera_mode = ORTHO_TOP_DOWN; 
+            return;
+        case '2': 
+            camera_mode = PERSPECTIVE_PLAYER; 
+            return;
+        case '3':
+            camera_mode = FIRST_PERSON;
+            frog->eye_vector = direction_to_vector(frog->direction);
+            return;
+    }
+
+    // The movement keys are different in first person, you can only go forwards or backwards and turn left or right
+    if(camera_mode == FIRST_PERSON) {
+        switch(key) {
+            case 'w': case 'W': move_forward(); break;
+            case 's': case 'S': move_backward(); break;
+            case 'a': case 'A': turn_left(); break;
+            case 'd': case 'D': turn_right(); break;
+        }
+    } else {
+        switch(key) {
+            case 'w': case 'W': try_move(player_row + 1, player_column); frog->turn(UP); break;
+            case 's': case 'S': try_move(player_row - 1, player_column); frog->turn(DOWN); break;
+            case 'a': case 'A': try_move(player_row, player_column - 1); frog->turn(LEFT); break;
+            case 'd': case 'D': try_move(player_row, player_column + 1); frog->turn(RIGHT); break;
+        }
+    }
+}
+
+ofVec3f Game::direction_to_vector(Direction dir) {
+    switch(dir) {
+        case UP:    return ofVec3f(0, 0, 1);
+        case DOWN:  return ofVec3f(0, 0, -1);
+        case LEFT:  return ofVec3f(-1, 0, 0);
+        case RIGHT: return ofVec3f(1, 0, 0);
+        default:    return ofVec3f(0, 0, 1);
     }
 }
 
 // Key released event
 void Game::key_released(int key){
 }
-// Get the position of a grid cell in world coordinates
+
+// Get the position of a grid cell in world coordinates 
 ofVec3f Game::get_grid_position(int row, int column){
     // Adjusted to make bottom left corner (0, 0)
-    GLfloat x = column * grid_size;
-    GLfloat z = row * grid_size;
+    GLfloat x = column * global.grid_size;
+    GLfloat z = row * global.grid_size;
     return ofVec3f(x, 0, z);
 }
 
 // Check if a grid cell is valid
 bool Game::is_valid(int row, int column){
-    return row >= 0 && row < grid_rows && column >= 0 && column < grid_columns;
+    return row >= 0 && row < global.grid_rows && column >= 0 && column < global.grid_columns;
+}
+
+// Check if the frog has collided
+bool Game::check_collision(ofVec3f &pos1, ofVec3f &dim1, ofVec3f &pos2, ofVec3f &dim2) {
+
+
+    bool collision = pos1.x < pos2.x + dim2.x &&
+                     pos1.x + dim1.x > pos2.x &&
+                     pos1.z < pos2.z + dim2.z &&
+                     pos1.z + dim1.z > pos2.z;
+
+    return collision;
 }

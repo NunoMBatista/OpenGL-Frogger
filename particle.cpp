@@ -1,0 +1,31 @@
+#include "particle.h"
+
+Particle::Particle(ofVec3f position, ofVec3f velocity, float lifespan){
+    this->position = position;
+    this->velocity = velocity*10;
+    this->lifespan = lifespan;
+}
+
+void Particle::update(){
+    position += velocity;
+    lifespan -= 0.01f;
+
+    if(lifespan < 0){
+        lifespan = 0;
+    }
+}
+
+void Particle::draw(){
+    position += velocity;
+
+    glPushMatrix();
+        glTranslatef(position.x, position.y, position.z);
+        glRotatef(ofRandom(0, 360), 1, 1, 1);
+        glScalef(10, 10, 10);
+        cube_unit(ofRandom(0, 1), ofRandom(0, 1), ofRandom(0, 1));
+    glPopMatrix();
+}
+
+bool Particle::is_dead(){
+    return false;
+}

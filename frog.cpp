@@ -1,5 +1,6 @@
 #include "frog.h"
 
+
 // Frog constructor
 Frog::Frog(ofVec3f dimensions, ofVec3f position)
     : dimensions(dimensions), position(position) {
@@ -29,29 +30,158 @@ Frog::Frog(ofVec3f dimensions, ofVec3f position)
     eye_l = head_l * 0.3;
 
     rotation = 0;
+    target_rotation = 0;
+    rotation_speed = 360.0f; // Degrees per second
+    is_rotating = false;
 
     // Initialize jump variables
     is_jumping = false;
-    jump_progress = 0.0f;
+    jump_progress = 0.0f;  // Progress of the jump in seconds (0 to jump_duration)
     jump_duration = 0.2f;  // Duration of the jump in seconds
-    jump_height = dimensions.y * 0.5f;  // Adjust as needed
+    jump_height = dimensions.y * 0.5f; // Height of the jump
+
+    // Initialize movement variables
+    is_moving = false;
+    movement_timer = 0;
+    movement_duration = 0.2f;
+
+    // Initialize explosion variables
+    is_exploding = false;
+    explosion_timer = 0;
+    explosion_duration = 0.7f;
+    explosion_rotation_speed = 720.0f; // Degrees per second
+    explosion_jump_height = dimensions.y * 1.5;
+
+    is_alive = true;
+    is_bursting = false;
+
+    f_scale = 1.0f;
+}
+
+// Destructor
+Frog::~Frog() {
+    for(auto particle : particles){
+        delete particle;
+    }
+    particles.clear();
 }
 
 void Frog::update(float delta_time) {
-    if(is_jumping) {
-        jump_progress += delta_time;
-        if(jump_progress >= jump_duration) {
-            jump_progress = jump_duration;
-            is_jumping = false;
+    // Exploding animation
+    if(is_exploding) update_explosion(delta_time);
+
+    // Update the particles
+    if(is_bursting){
+        // Remove lifespan 0
+        particles.erase(std::remove_if(particles.begin(), particles.end(), [](Particle* particle){
+            return particle->lifespan <= 0;
+        }), particles.end());
+
+        for(auto particle : particles){
+            particle->update();
         }
+    }
+
+    // Movement animation
+    if(is_moving) update_movement(delta_time);
+
+    // Jump animation
+    if(is_jumping) update_jump(delta_time);
+
+    // Rotation animation
+    if (is_rotating) update_rotation(delta_time);
+}
+
+void Frog::update_explosion(float delta_time) {
+    explosion_timer += delta_time;
+
+    float progress = explosion_timer / explosion_duration;
+    // Shrinking effect
+    f_scale = 1 - progress;
+
+    if(explosion_timer >= explosion_duration) {
+        is_exploding = false;
+        // Delete the frog
+        burst_effect();
+    } 
+    else {
+        rotation += explosion_rotation_speed * delta_time;
+        jump_progress += delta_time;
+    }
+}
+
+void Frog::update_movement(float delta_time) {
+    movement_timer += delta_time;
+    float progress = movement_timer / movement_duration;
+
+    if(progress >= 1.0f) {
+        position = target_position;
+        is_moving = false;
+        movement_timer = 0;
+    } 
+    else {
+        position = start_position.getInterpolated(target_position, progress);
+    }
+}
+
+void Frog::update_jump(float delta_time) {
+    jump_progress += delta_time;
+    if(jump_progress >= jump_duration) {
+        jump_progress = jump_duration;
+        is_jumping = false;
+    }
+}
+
+void Frog::update_rotation(float delta_time) {
+    // Amount of rotation needed to reach target
+    float diff = target_rotation - rotation; 
+    // Step size            
+    float step = rotation_speed * delta_time;
+    
+    // If the step is larger than the remaining rotation, set rotation to target and finish
+    if (abs(diff) < step) {
+        rotation = target_rotation;
+        is_rotating = false;
+    } 
+    else {
+        // Determine rotation direction
+        GLfloat dir = 0;
+        if(diff > 0) {
+            dir = 1;
+        } else {
+            dir = -1;
+        }
+    
+        // If the rotation is larger than 180, take the shortest path
+        if (abs(diff) > 180) {
+            dir *= -1;
+        }
+        rotation += dir * step;
+        
+        // Keep rotation in [-180, 180] range
+        if (rotation > 180) rotation -= 360;
+        if (rotation < -180) rotation += 360;
     }
 }
 
 // Draw frog
 void Frog::draw(){
+    // Draw the particles
+    if(is_bursting){
+        // Draw the particles
+        if(particles.size() == 0){
+            is_bursting = false;
+            is_alive = false;
+        }
+        for(auto particle : particles){
+            particle->draw();
+        }
+
+    }
+
     // Draw the frog
     glPushMatrix();
-        glTranslatef(position.x, position.y, position.z);
+        glTranslatef(position.x, position.y - leg_h*2, position.z);
 
         // Apply vertical offset for jump
         float y_offset = 0.0f;
@@ -59,9 +189,18 @@ void Frog::draw(){
             float t = jump_progress / jump_duration;
             y_offset = jump_height * sin(PI * t);
         }
+        if(is_exploding) {
+            // The frog does not come back down when exploding
+            y_offset = jump_height * jump_progress / explosion_duration;
+        }
         glTranslatef(0, y_offset, 0);
 
         glRotatef(rotation, 0, 1, 0); // Rotate the frog in the Y axis
+        
+        // Explosion shrinking effect
+        glScalef(f_scale, f_scale, f_scale);
+        
+        
         draw_body();
         draw_legs();
         draw_neck();
@@ -86,14 +225,16 @@ void Frog::draw_legs() {
             // Front legs
             glPushMatrix();
                 glTranslatef(0, 0, body_l*0.25);    
-                draw_leg(-body_w*0.25, 0, 0); // Left front leg
-                draw_leg(body_w*0.25, 0, 0);  // Right front leg
+                draw_leg(-body_w*0.75, 0, 0); // Left front leg
+                draw_leg(body_w*0.75, 0, 0);  // Right front leg
             glPopMatrix(); // End front legs
             // Back legs
             glPushMatrix();
-                glTranslatef(0, 0, -body_l*0.25);    
-                draw_leg(-body_w*0.25, 0, 0); // Left back leg
-                draw_leg(body_w*0.25, 0, 0);  // Right back leg
+                // The back legs are double the size of the front legs and are placed further back
+                glTranslatef(0, 0, -body_l*0.25 - leg_l*2);   
+                glScalef(1, 1, 2);
+                draw_leg(-body_w*0.75, 0, 0); // Left back leg
+                draw_leg(body_w*0.75, 0, 0);  // Right back leg
             glPopMatrix(); // End back legs
         glPopMatrix(); // End legs
     glPopMatrix(); // End below body
@@ -101,8 +242,8 @@ void Frog::draw_legs() {
 
 void Frog::draw_leg(GLfloat x, GLfloat y, GLfloat z) {
     glPushMatrix();
-        glTranslatef(x, y, z);
-        glScalef(leg_w, leg_h, leg_l);
+        glTranslatef(x, y+leg_h, z);
+        glScalef(leg_w*2, leg_h*2, leg_l*2);
         cube_unit();
     glPopMatrix();
 }
@@ -163,19 +304,50 @@ void Frog::draw_eye(GLfloat x) {
 
 void Frog::turn(Direction new_direction) {
     direction = new_direction;
-
-    switch(new_direction){
+    
+    float new_rotation = 0;
+    switch(new_direction) {
         case UP:
-            rotation = 0;
+            new_rotation = 0;
             break;
         case DOWN:
-            rotation = 180;
+            new_rotation = 180;
             break;
         case LEFT:
-            rotation = -90;
+            new_rotation = -90;
             break;
         case RIGHT:
-            rotation = 90;
+            new_rotation = 90;
             break;
+    }
+    
+    target_rotation = new_rotation;
+    is_rotating = true;
+}
+
+void Frog::start_move(const ofVec3f& start_pos, const ofVec3f& target_pos) {
+    start_position = start_pos;
+    target_position = target_pos;
+    is_moving = true;
+    movement_timer = 0;
+    is_jumping = true;
+    jump_progress = 0.0f;
+}
+
+void Frog::explosion() {
+    is_moving = false;
+    is_jumping = false;
+    is_exploding = true;
+    jump_height = explosion_jump_height;
+    explosion_timer = 0;
+}
+
+void Frog::burst_effect(){
+    is_bursting = true; 
+    for(int i = 0; i < 100; i++){
+        ofVec3f p_position = position;
+        p_position.y += jump_height/2;
+        Particle* particle = new Particle(p_position, ofVec3f(ofRandom(-1, 1), ofRandom(-1, 1), ofRandom(-1, 1)), ofRandom(0.5, 1));
+        particles.push_back(particle);
     }
 }

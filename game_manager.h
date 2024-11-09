@@ -1,46 +1,41 @@
 #pragma once
 
 #include "ofMain.h"
+#include "cg_extras.h"
+#include "camera.h"
+#include "grid.h" 
+#include "global.h"
+#include <vector>
 
+// Forward declarations
 class Frog;
-
-enum CameraMode{
-    ORTHO_TOP_DOWN,
-    PERSPECTIVE_PLAYER,
-    FIRST_PERSON
-};
+class Camera; 
+class Car;
 
 class Game{
     public: 
         Game();
+        ~Game();
 
         void draw();
 
         void update();
 
-        void camera();
+        void apply_camera(); 
 
         void key_pressed(int key);
 
         void key_released(int key);
 
         ofVec3f get_grid_position(int row, int column);
-        float get_movement_progress();
         bool is_valid(int row, int column);
 
+        bool check_collision(ofVec3f &pos1, ofVec3f &dim1, ofVec3f &pos2, ofVec3f &dim2);
     private: 
         /*
         ******* Camera definitions ******* 
         */
-
-
-        // Distance to scene center
-        GLfloat cam_dist;
-
-        // Field of view angle
-    	GLfloat theta_fov = 60;
-        
-        // Camera mode
+        Camera* cam;
         CameraMode camera_mode;
         /*
         ******* End of camera definitions ******* 
@@ -53,16 +48,9 @@ class Game{
         ofVec3f player_position;
         ofVec3f player_dimensions;
 
-        ofVec3f player_movement;
-
         // Player grid position
         int player_row;
         int player_column;
-
-        // Movement interpolation variables
-        ofVec3f start_position; // Position of the player before movement
-        float movement_timer; // Timer for movement interpolation
-        float movement_duration; // Duration of the movement
         /*
         ******* End of player definitions ******* 
         */
@@ -72,6 +60,7 @@ class Game{
         ******* Frog definitions ******* 
         */
         Frog* frog;
+        std::vector<Frog*> dead_frogs;
         /*
         ******* End of frog definitions ******* 
         */
@@ -79,14 +68,29 @@ class Game{
         /*
         ******* Grid definitions ******* 
         */
-        int grid_rows = 15;
-        int grid_columns = 15;
-
-
-        GLfloat grid_size = 50; // Size of each grid cell
-        bool is_moving = false; // Is the player moving?
         ofVec3f target_position; // Where the player is moving to
 
         const float ROTATION_SPEED = 90.0f; // Degrees per key press
+        /*
+        ******* End of grid definitions ******* 
+        */
 
+
+       
+        /*
+        ******* First person camera definitions ******* 
+        */
+        void move_forward();
+        void move_backward();
+        void turn_left();
+        void turn_right(); 
+        ofVec3f direction_to_vector(Direction dir);
+        /*
+        ******** End of first person camera definitions ******* 
+        */
+
+
+        void try_move(int new_row, int new_column); // Try to move the player to a new grid cell (check if it's valid)
+
+        std::vector<Car*> cars; // List of cars
 };

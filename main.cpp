@@ -1,5 +1,6 @@
 #include "ofMain.h"
 #include "ofApp.h"
+#include "global.h"
 
 //========================================================================
 int main( ){

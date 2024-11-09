@@ -15,6 +15,13 @@ Coimbra, 09/2023
 
 #include "ofMain.h"
 
+enum Direction{
+    UP,
+    DOWN,
+    LEFT,
+    RIGHT
+};
+
 //short named function to get screen width
 inline float gw() {
 	return ofGetWidth();
