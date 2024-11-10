@@ -56,6 +56,7 @@ class Frog {
         bool is_bursting;
 
         bool on_plat;
+        ofVec3f plat_velocity;
 
         bool is_drowning;
         bool is_splashing;

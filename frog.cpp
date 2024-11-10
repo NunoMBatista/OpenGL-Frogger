@@ -56,12 +56,16 @@ Frog::Frog(ofVec3f dimensions, ofVec3f position)
     is_alive = true;
     is_bursting = false;
 
+    is_drowning = false;
+    is_splashing = false;
+
     drowning_jump_height = dimensions.y * 1;
     drowning_duration = 0.2f;
 
     f_scale = 1.0f;
 
     on_plat = false;
+    plat_velocity = ofVec3f(0, 0, 0); 
 }
 
 // Destructor
@@ -211,7 +215,7 @@ void Frog::draw(){
 
         // Apply vertical offset for jump
         float y_offset = 0.0f;
-        
+
         if(on_plat){
             y_offset += global.platform_offset_y;
         }

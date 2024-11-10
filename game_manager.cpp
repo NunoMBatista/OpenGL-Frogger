@@ -39,6 +39,9 @@ Game::Game() {
 Game::~Game() {
     delete cam;
     delete frog;
+    for(auto finished_frog: finished_frogs){
+        delete finished_frog;
+    }
     for(auto car: cars){
         delete car;
     }
@@ -57,6 +60,8 @@ void Game::apply_camera() {
 // Update the game state
 void Game::update() {
     float delta_time = ofGetLastFrameTime();
+
+    player_position = frog->position;
     frog->update(delta_time);
     cam->update(delta_time, player_position);
 
@@ -94,19 +99,40 @@ void Game::update() {
 
     bool on_plat = false;
     frog->on_plat = false;
+
+    // Check if the frog has reached a goal
+    if((player_row >= global.grid->top_river_row + 1) && (!frog->is_moving)){
+        cout << "Player column: " << player_column << endl;
+        // Copy the frog to the finished_frogs vector
+        filled_slots[player_column] = 1;
+        
+        Frog* finished_frog = new Frog(*frog);
+        finished_frog->rotation = 180;
+        
+        finished_frogs.push_back(finished_frog);
+        // Reset the player frog
+        reset_player();
+    }
+
+    ofVec3f cur_plat_velocity = ofVec3f(0, 0, 0);
     for(auto platform: platforms){
         ofVec3f acceptable_dimensions = frog->dimensions * 0.5;
         if(check_collision(frog->position, acceptable_dimensions, platform->position, platform->dimensions)){
             on_plat = true;
-            frog->on_plat = true;
-            frog->position += platform->velocity;
-            player_position = frog->position;
-            player_position.y += global.platform_offset_y;
+            cur_plat_velocity = platform->velocity;
         }
     }
+    if(on_plat){
+        frog->on_plat = true;
+        frog->plat_velocity = cur_plat_velocity;
 
+        frog->position += cur_plat_velocity * delta_time;
+        player_position = frog->position;
+        player_position.y += global.platform_offset_y;
+
+    }
     // Check if the frog is in the river
-    if((player_row >= global.grid->bottom_river_row) && (player_row <= global.grid->top_river_row)){
+    if((player_row >= global.grid->bottom_river_row) && (player_row < global.grid->top_river_row)){
         // Check if the frog is on a platform (log or turtle)
         if(!on_plat && !frog->is_drowning && !frog->is_splashing && !frog->is_jumping && !frog->is_moving){
             // Copy the frog to the dead_frogs vector
@@ -117,6 +143,7 @@ void Game::update() {
             reset_player();
         }
     }
+
 
 }
 
@@ -140,6 +167,9 @@ void Game::draw_scene(){
         frog->draw();
     }
     
+    for(auto finished_frog: finished_frogs){
+        finished_frog->draw();
+    }
 
     for(auto dead_frog: dead_frogs){
         if(dead_frog->is_alive){
@@ -201,27 +231,61 @@ void Game::turn_right() {
 }
 
 void Game::try_move(int new_row, int new_column) {
+    ofVec3f new_position = player_position;
+    int closest_column = global.grid->closest_column(player_position);
+
+    // When the frog is on the last row, it can only move to a goal position
+    if(new_row == global.grid->top_river_row + 1){
+        // Can only move to the last row if it's a goal position and it's empty
+        if(((closest_column - 1) % 3 != 0) || (filled_slots[closest_column])){
+            return;
+        }
+        else{
+            filled_slots[closest_column] = true;
+            new_position = global.grid->get_grid_position(new_row, closest_column);
+            frog->start_move(player_position, new_position);
+            player_row = new_row;
+            player_column = closest_column;
+        }
+    }
+    
     if(global.grid->is_valid(new_row, new_column) && !frog->is_moving) {
-        // Default moving position
-        if(player_row >= global.grid->bottom_river_row){
-            // If the player is leaving the river
-            if(new_row < global.grid->bottom_river_row){
-                // // Snap to the closest column
-                int closest_column = global.grid->closest_column(player_position);
-                new_column = closest_column;            
+        // If the frog is in the river
+        if(player_row >= global.grid->bottom_river_row && player_row <= global.grid->top_river_row + 1){
+            // If the frog is hopping platforms or leaving the river
+            if(new_row != player_row){
+                // Snap to the closest column
+                new_column = closest_column;
+                
+                new_position = global.grid->get_grid_position(new_row, new_column);
+
+                if(new_row < global.grid->bottom_river_row){
+                    new_column = global.grid->closest_column(new_position);
+                }
+            }
+
+            
+            // If the frog is moving in the same platform row do not snap to the closest cell
+            else if(new_column != player_column){
+                GLfloat move_offset = (new_column - player_column) * global.grid_size;
+                new_position.x = player_position.x + move_offset;
+                new_position.y = player_position.y - global.platform_offset_y;
+                new_position.z = player_position.z;
             }
         }
+        // If the frog is not in the river 
+        else{
+            new_position = global.grid->get_grid_position(new_row, new_column);
+        }
 
-        ofVec3f new_position = ofVec3f(0, 0, 0);
-        new_position = global.grid->get_grid_position(new_row, new_column);
-        
-        frog->start_move(player_position, new_position);
-        player_row = new_row;
         player_column = new_column;
-        player_position = new_position;
+        player_row = new_row;
+        frog->start_move(player_position, new_position);
+
+        //player_position = new_position;
+        frog->position = player_position;
+
     }
-
-
 }
 
 void Game::key_pressed(int key) {
@@ -295,39 +359,49 @@ void Game::reset_player() {
 
 void Game::course_setup(){
     // First row of cars 
-    // cars.push_back(new Car(1, ofVec3f(global.grid_size * 0.75, global.grid_size * 0.75, global.grid_size * 0.75), global.grid->get_grid_position(1, 1), ofVec3f(-global.base_element_speed, 0, 0)));
-    // cars.push_back(new Car(1, ofVec3f(global.grid_size * 0.75, global.grid_size * 0.75, global.grid_size * 0.75), global.grid->get_grid_position(1, 5), ofVec3f(-global.base_element_speed, 0, 0)));
-    // cars.push_back(new Car(1, ofVec3f(global.grid_size * 0.75, global.grid_size * 0.75, global.grid_size * 0.75), global.grid->get_grid_position(1, 9), ofVec3f(-global.base_element_speed, 0, 0)));
+    cars.push_back(new Car(1, ofVec3f(global.grid_size * 0.75, global.grid_size * 0.75, global.grid_size * 0.75), global.grid->get_grid_position(1, 1), ofVec3f(-global.base_element_speed, 0, 0)));
+    cars.push_back(new Car(1, ofVec3f(global.grid_size * 0.75, global.grid_size * 0.75, global.grid_size * 0.75), global.grid->get_grid_position(1, 5), ofVec3f(-global.base_element_speed, 0, 0)));
+    cars.push_back(new Car(1, ofVec3f(global.grid_size * 0.75, global.grid_size * 0.75, global.grid_size * 0.75), global.grid->get_grid_position(1, 9), ofVec3f(-global.base_element_speed, 0, 0)));
 
-    // // Second row of cars
-    // cars.push_back(new Car(2, ofVec3f(global.grid_size * 0.75, global.grid_size * 0.75, global.grid_size * 0.75), global.grid->get_grid_position(2, 1), ofVec3f(global.base_element_speed, 0, 0)));
-    // cars.push_back(new Car(2, ofVec3f(global.grid_size * 0.75, global.grid_size * 0.75, global.grid_size * 0.75), global.grid->get_grid_position(2, 9), ofVec3f(global.base_element_speed, 0, 0)));
-    // cars.push_back(new Car(2, ofVec3f(global.grid_size * 0.75, global.grid_size * 0.75, global.grid_size * 0.75), global.grid->get_grid_position(2, 13), ofVec3f(global.base_element_speed, 0, 0)));
+    // Second row of cars
+    cars.push_back(new Car(2, ofVec3f(global.grid_size * 0.75, global.grid_size * 0.75, global.grid_size * 0.75), global.grid->get_grid_position(2, 1), ofVec3f(global.base_element_speed, 0, 0)));
+    cars.push_back(new Car(2, ofVec3f(global.grid_size * 0.75, global.grid_size * 0.75, global.grid_size * 0.75), global.grid->get_grid_position(2, 9), ofVec3f(global.base_element_speed, 0, 0)));
+    cars.push_back(new Car(2, ofVec3f(global.grid_size * 0.75, global.grid_size * 0.75, global.grid_size * 0.75), global.grid->get_grid_position(2, 13), ofVec3f(global.base_element_speed, 0, 0)));
 
-    // // Third row of cars
-    // cars.push_back(new Car(3, ofVec3f(global.grid_size * 0.75, global.grid_size * 0.75, global.grid_size * 0.75), global.grid->get_grid_position(3, 2), ofVec3f(-global.base_element_speed * 0.8, 0, 0)));
-    // cars.push_back(new Car(3, ofVec3f(global.grid_size * 0.75, global.grid_size * 0.75, global.grid_size * 0.75), global.grid->get_grid_position(3, 6), ofVec3f(-global.base_element_speed * 0.8, 0, 0)));
-    // cars.push_back(new Car(3, ofVec3f(global.grid_size * 0.75, global.grid_size * 0.75, global.grid_size * 0.75), global.grid->get_grid_position(3, 10), ofVec3f(-global.base_element_speed * 0.8, 0, 0)));
+    // Third row of cars
+    cars.push_back(new Car(3, ofVec3f(global.grid_size * 0.75, global.grid_size * 0.75, global.grid_size * 0.75), global.grid->get_grid_position(3, 2), ofVec3f(-global.base_element_speed * 0.8, 0, 0)));
+    cars.push_back(new Car(3, ofVec3f(global.grid_size * 0.75, global.grid_size * 0.75, global.grid_size * 0.75), global.grid->get_grid_position(3, 6), ofVec3f(-global.base_element_speed * 0.8, 0, 0)));
+    cars.push_back(new Car(3, ofVec3f(global.grid_size * 0.75, global.grid_size * 0.75, global.grid_size * 0.75), global.grid->get_grid_position(3, 10), ofVec3f(-global.base_element_speed * 0.8, 0, 0)));
 
-    // // Fourth row of cars
-    // cars.push_back(new Car(4, ofVec3f(global.grid_size * 0.75, global.grid_size * 0.75, global.grid_size * 0.75), global.grid->get_grid_position(4, 7), ofVec3f(global.base_element_speed * 2, 0, 0)));
+    // Fourth row of cars
+    cars.push_back(new Car(4, ofVec3f(global.grid_size * 0.75, global.grid_size * 0.75, global.grid_size * 0.75), global.grid->get_grid_position(4, 7), ofVec3f(global.base_element_speed * 2, 0, 0)));
 
-    // // Fifth row of cars
-    // cars.push_back(new Car(5, ofVec3f(global.grid_size * 0.75, global.grid_size * 0.75, global.grid_size * 0.75), global.grid->get_grid_position(5, 3), ofVec3f(global.base_element_speed * 1.5, 0, 0)));
-    // cars.push_back(new Car(5, ofVec3f(global.grid_size * 0.75, global.grid_size * 0.75, global.grid_size * 0.75), global.grid->get_grid_position(5, 8), ofVec3f(global.base_element_speed * 1.5, 0, 0)));
+    // Fifth row of cars
+    cars.push_back(new Car(5, ofVec3f(global.grid_size * 0.75, global.grid_size * 0.75, global.grid_size * 0.75), global.grid->get_grid_position(5, 3), ofVec3f(global.base_element_speed * 1.5, 0, 0)));
+    cars.push_back(new Car(5, ofVec3f(global.grid_size * 0.75, global.grid_size * 0.75, global.grid_size * 0.75), global.grid->get_grid_position(5, 8), ofVec3f(global.base_element_speed * 1.5, 0, 0)));
 
-    // // First row of platforms
-    // platforms.push_back(new Platform(1, ofVec3f(global.grid_size * 3, global.grid_size * 0.5, global.grid_size * 0.75), global.grid->get_grid_position(9, 1), ofVec3f(global.base_element_speed * 0.5, 0, 0)));
-    // platforms.push_back(new Platform(1, ofVec3f(global.grid_size * 3, global.grid_size * 0.5, global.grid_size * 0.75), global.grid->get_grid_position(9, 8), ofVec3f(global.base_element_speed * 0.5, 0, 0)));
+    // First row of platforms
+    platforms.push_back(new Platform(1, ofVec3f(global.grid_size * 3, global.grid_size * 0.5, global.grid_size * 0.75), global.grid->get_grid_position(global.grid->bottom_river_row, 1), ofVec3f(global.base_element_speed * 0.5, 0, 0)));
+    platforms.push_back(new Platform(1, ofVec3f(global.grid_size * 3, global.grid_size * 0.5, global.grid_size * 0.75), global.grid->get_grid_position(global.grid->bottom_river_row, 8), ofVec3f(global.base_element_speed * 0.5, 0, 0)));
 
-    // // Second row of platforms
-    // platforms.push_back(new Platform(1, ofVec3f(global.grid_size * 3, global.grid_size * 0.5, global.grid_size * 0.75), global.grid->get_grid_position(10, 3), ofVec3f(-global.base_element_speed * 1.25, 0, 0)));
-    // platforms.push_back(new Platform(1, ofVec3f(global.grid_size * 3, global.grid_size * 0.5, global.grid_size * 0.75), global.grid->get_grid_position(10, 10), ofVec3f(-global.base_element_speed * 1.25, 0, 0)));
+    // Second row of platforms
+    platforms.push_back(new Platform(1, ofVec3f(global.grid_size * 3, global.grid_size * 0.5, global.grid_size * 0.75), global.grid->get_grid_position(global.grid->bottom_river_row + 1, 3), ofVec3f(-global.base_element_speed * 1.25, 0, 0)));
+    platforms.push_back(new Platform(1, ofVec3f(global.grid_size * 3, global.grid_size * 0.5, global.grid_size * 0.75), global.grid->get_grid_position(global.grid->bottom_river_row + 1, 10), ofVec3f(-global.base_element_speed * 1.25, 0, 0)));
 
-    // // Third row of platforms
-    // platforms.push_back(new Platform(1, ofVec3f(global.grid_size * 3, global.grid_size * 0.5, global.grid_size * 0.75), global.grid->get_grid_position(11, 1), ofVec3f(global.base_element_speed * 0.625, 0, 0)));
-    // platforms.push_back(new Platform(1, ofVec3f(global.grid_size * 3, global.grid_size * 0.5, global.grid_size * 0.75), global.grid->get_grid_position(11, 8), ofVec3f(global.base_element_speed * 0.625, 0, 0)));
+    // Third row of platforms
+    platforms.push_back(new Platform(1, ofVec3f(global.grid_size * 3, global.grid_size * 0.5, global.grid_size * 0.75), global.grid->get_grid_position(global.grid->bottom_river_row + 2, 1), ofVec3f(global.base_element_speed * 0.625, 0, 0)));
+    platforms.push_back(new Platform(1, ofVec3f(global.grid_size * 3, global.grid_size * 0.5, global.grid_size * 0.75), global.grid->get_grid_position(global.grid->bottom_river_row + 2, 8), ofVec3f(global.base_element_speed * 0.625, 0, 0)));
 
-    platforms.push_back(new Platform(2, ofVec3f(global.grid_size * 1, global.grid_size * 0.5, global.grid_size * 0.75), global.grid->get_grid_position(2, 7), ofVec3f(0, 0, 0)));
+    // Fourth row of platforms
+    platforms.push_back(new Platform(2, ofVec3f(global.grid_size * 1, global.grid_size * 0.5, global.grid_size * 0.75), global.grid->get_grid_position(global.grid->bottom_river_row + 3, 7), ofVec3f(-global.base_element_speed * 1.5, 0, 0)));
+    platforms.push_back(new Platform(2, ofVec3f(global.grid_size * 1, global.grid_size * 0.5, global.grid_size * 0.75), global.grid->get_grid_position(global.grid->bottom_river_row + 3, 8), ofVec3f(-global.base_element_speed * 1.5, 0, 0)));
+    platforms.push_back(new Platform(2, ofVec3f(global.grid_size * 1, global.grid_size * 0.5, global.grid_size * 0.75), global.grid->get_grid_position(global.grid->bottom_river_row + 3, 9), ofVec3f(-global.base_element_speed * 1.5, 0, 0)));
 
+    platforms.push_back(new Platform(2, ofVec3f(global.grid_size * 1, global.grid_size * 0.5, global.grid_size * 0.75), global.grid->get_grid_position(global.grid->bottom_river_row + 3, 12), ofVec3f(-global.base_element_speed * 1.5, 0, 0)));
+    platforms.push_back(new Platform(2, ofVec3f(global.grid_size * 1, global.grid_size * 0.5, global.grid_size * 0.75), global.grid->get_grid_position(global.grid->bottom_river_row + 3, 13), ofVec3f(-global.base_element_speed * 1.5, 0, 0)));
+    platforms.push_back(new Platform(2, ofVec3f(global.grid_size * 1, global.grid_size * 0.5, global.grid_size * 0.75), global.grid->get_grid_position(global.grid->bottom_river_row + 3, 14), ofVec3f(-global.base_element_speed * 1.5, 0, 0)));
+
+    // Fifth row of platforms
+    platforms.push_back(new Platform(1, ofVec3f(global.grid_size * 2, global.grid_size * 0.5, global.grid_size * 0.75), global.grid->get_grid_position(global.grid->bottom_river_row + 4, 2), ofVec3f(global.base_element_speed * 0.75, 0, 0)));
+    platforms.push_back(new Platform(1, ofVec3f(global.grid_size * 2, global.grid_size * 0.5, global.grid_size * 0.75), global.grid->get_grid_position(global.grid->bottom_river_row + 4, 7), ofVec3f(global.base_element_speed * 0.75, 0, 0)));
 }
