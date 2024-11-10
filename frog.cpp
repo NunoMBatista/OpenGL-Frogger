@@ -9,7 +9,7 @@ Frog::Frog(ofVec3f dimensions, ofVec3f position)
     body_h = dimensions.y * 0.20;
     body_l = dimensions.z * 0.5;
 
-    // Legs proportions
+    // Leg proportions
     leg_w = body_w * 0.2;
     leg_h = body_h * 0.4;
     leg_l = body_l * 0.1;
@@ -49,11 +49,15 @@ Frog::Frog(ofVec3f dimensions, ofVec3f position)
     is_exploding = false;
     explosion_timer = 0;
     explosion_duration = 0.7f;
+    explosion_duration = 0.2f;
     explosion_rotation_speed = 720.0f; // Degrees per second
     explosion_jump_height = dimensions.y * 1.5;
 
     is_alive = true;
     is_bursting = false;
+
+    drowning_jump_height = dimensions.y * 1;
+    drowning_duration = 0.2f;
 
     f_scale = 1.0f;
 }
@@ -70,8 +74,11 @@ void Frog::update(float delta_time) {
     // Exploding animation
     if(is_exploding) update_explosion(delta_time);
 
+    // Drowning animation
+    if(is_drowning) update_drowning(delta_time);
+
     // Update the particles
-    if(is_bursting){
+    if(is_bursting || is_splashing){
         // Remove lifespan 0
         particles.erase(std::remove_if(particles.begin(), particles.end(), [](Particle* particle){
             return particle->lifespan <= 0;
@@ -92,6 +99,23 @@ void Frog::update(float delta_time) {
     if (is_rotating) update_rotation(delta_time);
 }
 
+void Frog::update_drowning(float delta_time){
+    if(is_moving) return;
+    // If it's not moving, it's already in the water
+    jump_height = drowning_jump_height;
+
+
+    drowning_timer += delta_time;
+    if(drowning_timer >= drowning_duration){
+        // Stop drowning and start splashing 
+        is_drowning = false;
+        splash_effect();
+    }
+    else{
+        jump_progress += delta_time;
+    }
+}
+
 void Frog::update_explosion(float delta_time) {
     explosion_timer += delta_time;
 
@@ -102,6 +126,7 @@ void Frog::update_explosion(float delta_time) {
     if(explosion_timer >= explosion_duration) {
         is_exploding = false;
         // Delete the frog
+        f_scale = 0;
         burst_effect();
     } 
     else {
@@ -167,7 +192,7 @@ void Frog::update_rotation(float delta_time) {
 // Draw frog
 void Frog::draw(){
     // Draw the particles
-    if(is_bursting){
+    if(is_bursting || is_splashing){
         // Draw the particles
         if(particles.size() == 0){
             is_bursting = false;
@@ -176,7 +201,6 @@ void Frog::draw(){
         for(auto particle : particles){
             particle->draw();
         }
-
     }
 
     // Draw the frog
@@ -192,6 +216,9 @@ void Frog::draw(){
         if(is_exploding) {
             // The frog does not come back down when exploding
             y_offset = jump_height * jump_progress / explosion_duration;
+        }
+        if(is_drowning || is_splashing){
+            y_offset = -(jump_height * jump_progress / drowning_duration);
         }
         glTranslatef(0, y_offset, 0);
 
@@ -344,10 +371,38 @@ void Frog::explosion() {
 
 void Frog::burst_effect(){
     is_bursting = true; 
-    for(int i = 0; i < 100; i++){
+    for(int i = 0; i < 200; i++){
         ofVec3f p_position = position;
         p_position.y += jump_height/2;
-        Particle* particle = new Particle(p_position, ofVec3f(ofRandom(-1, 1), ofRandom(-1, 1), ofRandom(-1, 1)), ofRandom(0.5, 1));
+        Particle* particle = new Particle(
+            p_position,
+            ofVec3f(ofRandom(-1, 1), ofRandom(-1, 1), ofRandom(-1, 1)),
+            ofVec3f(ofRandom(0, 1), ofRandom(0, 1), ofRandom(0, 1)),
+            ofRandom(0.5, 1)
+        );
         particles.push_back(particle);
     }
+}
+
+void Frog::drown(){
+    is_drowning = true;
+    drowning_timer = 0;
+
+}
+
+void Frog::splash_effect(){
+    is_splashing = true;
+    for(int i = 0; i < 200; i++){
+        ofVec3f p_position = position;
+        p_position.y -= jump_height/2;
+        Particle* particle = new Particle(
+            p_position,
+            ofVec3f(ofRandom(-0.2, 0.2), ofRandom(0.5, 1), ofRandom(-0.2, 0.2))/3,
+            ofVec3f(0, 0, ofRandom(0, 1)),
+            ofRandom(0.2, 0.5)
+        );
+        
+        particles.push_back(particle);
+    }
+
 }

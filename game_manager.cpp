@@ -3,16 +3,18 @@
 #include "cg_cam_extras.h"
 #include "frog.h"
 #include "car.h"
+#include "platform.h"
 
 Game::Game() {
     glEnable(GL_DEPTH_TEST); // Make it possible to see the depth of the objects
+    ofSetBackgroundColor(0, 0, 0); // Set the background color to black
 
     cam = new Camera(60.0f, global.grid->get_grid_position(global.grid_rows / 2, global.grid_columns / 2)); 
     camera_mode = ORTHO_TOP_DOWN;
 
     // Player position
     player_position = global.grid->get_grid_position(0, global.grid_columns / 2); // Start at middle of first row
-    player_dimensions = ofVec3f(40, 80, 50);
+    player_dimensions = ofVec3f(40, 80, 45);
 
     // Create the frog
     frog = new Frog(player_dimensions, player_position);
@@ -26,10 +28,8 @@ Game::Game() {
     // Setup the camera
     cam->setup(player_position, global.grid_columns);
 
-    cars.push_back(new Car(ofVec3f(global.grid_size / 2, global.grid_size / 2, global.grid_size / 2), global.grid->get_grid_position(1, 1), ofVec3f(-1, 0, 0)));
-    cars.push_back(new Car(ofVec3f(global.grid_size / 2, global.grid_size / 2, global.grid_size / 2), global.grid->get_grid_position(1, 5), ofVec3f(-1, 0, 0)));
-    cars.push_back(new Car(ofVec3f(global.grid_size / 2, global.grid_size / 2, global.grid_size / 2), global.grid->get_grid_position(1, 9), ofVec3f(-1, 0, 0)));
-
+    // Setup the course
+    course_setup();
 }
 
 Game::~Game() {
@@ -37,6 +37,9 @@ Game::~Game() {
     delete frog;
     for(auto car: cars){
         delete car;
+    }
+    for(auto platform: platforms){
+        delete platform;
     }
     for(auto dead_frog: dead_frogs){
         delete dead_frog;
@@ -60,15 +63,19 @@ void Game::update() {
         else{
             // Remove the frog from the dead_frogs vector
             dead_frogs.erase(std::find(dead_frogs.begin(), dead_frogs.end(), dead_frog), dead_frogs.end());
-            // Free memory
             delete dead_frog;
         }
+    }
+
+    for(auto platform: platforms){
+        platform->update();
     }
 
     for(auto car : cars) {
         car->update();
     }
 
+    // Check for collisions
     for(auto car: cars){
         if(check_collision(frog->position, frog->dimensions, car->position, car->dimensions)){
             // Copy the frog to the dead_frogs vector
@@ -77,10 +84,22 @@ void Game::update() {
             dead_frogs.push_back(dead_frog);
 
             // Reset the player frog
-            player_position = global.grid->get_grid_position(0, global.grid_columns / 2);
-            frog = new Frog(player_dimensions, player_position);
-            player_row = 0;
-            player_column = global.grid_columns / 2;
+            reset_player();
+        }
+    }
+
+    bool on_plat = false;    
+    // Check if the frog is in the river
+    if((player_row >= global.grid->bottom_river_row) && (player_row <= global.grid->top_river_row)){
+        // Check if the frog is on a platform (log or turtle)
+        if(!on_plat && !frog->is_drowning && !frog->is_splashing && !frog->is_jumping && !frog->is_moving){
+            // Copy the frog to the dead_frogs vector
+            Frog* dead_frog = new Frog(*frog);
+            dead_frog->drown();
+            dead_frogs.push_back(dead_frog);
+
+            // Reset the player frog
+            reset_player();
         }
     }
 
@@ -89,6 +108,17 @@ void Game::update() {
 // Draw the main game scene
 void Game::draw(){
     apply_camera(); 
+    draw_scene();
+
+    // Draw a minimap in the top left corner in case of top down view
+    if(camera_mode == FIRST_PERSON){
+        glViewport(gw()*0.5, gh()*0.5, gw()*0.5, gh()*0.5);
+        cam->apply_ortho_top_down(player_position);
+        draw_scene();
+    }
+}
+
+void Game::draw_scene(){
     frog->draw();
 
     for(auto dead_frog: dead_frogs){
@@ -97,12 +127,15 @@ void Game::draw(){
         }
     }
 
+    for(auto platform: platforms){
+        platform->draw();
+    }
+
     for(auto car: cars){
         car->draw();
     }
 
     global.grid->draw();
-
 }
 
 void Game::move_forward() {
@@ -205,14 +238,6 @@ ofVec3f Game::direction_to_vector(Direction dir) {
 void Game::key_released(int key){
 }
 
-// Get the position of a grid cell in world coordinates 
-ofVec3f Game::get_grid_position(int row, int column){
-    // Adjusted to make bottom left corner (0, 0)
-    GLfloat x = column * global.grid_size;
-    GLfloat z = row * global.grid_size;
-    return ofVec3f(x, 0, z);
-}
-
 // Check if a grid cell is valid
 bool Game::is_valid(int row, int column){
     return row >= 0 && row < global.grid_rows && column >= 0 && column < global.grid_columns;
@@ -228,4 +253,41 @@ bool Game::check_collision(ofVec3f &pos1, ofVec3f &dim1, ofVec3f &pos2, ofVec3f 
                      pos1.z + dim1.z > pos2.z;
 
     return collision;
+}
+
+void Game::reset_player() {
+    player_position = global.grid->get_grid_position(0, global.grid_columns / 2);
+    frog = new Frog(player_dimensions, player_position);
+    player_row = 0;
+    player_column = global.grid_columns / 2;
+}
+
+void Game::course_setup(){
+    // First row of cars 
+    cars.push_back(new Car(1, ofVec3f(global.grid_size * 0.75, global.grid_size * 0.75, global.grid_size * 0.75), global.grid->get_grid_position(1, 1), ofVec3f(-1, 0, 0)));
+    cars.push_back(new Car(1, ofVec3f(global.grid_size * 0.75, global.grid_size * 0.75, global.grid_size * 0.75), global.grid->get_grid_position(1, 5), ofVec3f(-1, 0, 0)));
+    cars.push_back(new Car(1, ofVec3f(global.grid_size * 0.75, global.grid_size * 0.75, global.grid_size * 0.75), global.grid->get_grid_position(1, 9), ofVec3f(-1, 0, 0)));
+
+    // Second row of cars
+    cars.push_back(new Car(2, ofVec3f(global.grid_size * 0.75, global.grid_size * 0.75, global.grid_size * 0.75), global.grid->get_grid_position(2, 1), ofVec3f(1, 0, 0)));
+    cars.push_back(new Car(2, ofVec3f(global.grid_size * 0.75, global.grid_size * 0.75, global.grid_size * 0.75), global.grid->get_grid_position(2, 9), ofVec3f(1, 0, 0)));
+    cars.push_back(new Car(2, ofVec3f(global.grid_size * 0.75, global.grid_size * 0.75, global.grid_size * 0.75), global.grid->get_grid_position(2, 13), ofVec3f(1, 0, 0)));
+
+    // Third row of cars
+    cars.push_back(new Car(3, ofVec3f(global.grid_size * 0.75, global.grid_size * 0.75, global.grid_size * 0.75), global.grid->get_grid_position(3, 2), ofVec3f(-0.8, 0, 0)));
+    cars.push_back(new Car(3, ofVec3f(global.grid_size * 0.75, global.grid_size * 0.75, global.grid_size * 0.75), global.grid->get_grid_position(3, 6), ofVec3f(-0.8, 0, 0)));
+    cars.push_back(new Car(3, ofVec3f(global.grid_size * 0.75, global.grid_size * 0.75, global.grid_size * 0.75), global.grid->get_grid_position(3, 10), ofVec3f(-0.8, 0, 0)));
+
+    // Fourth row of cars
+    cars.push_back(new Car(4, ofVec3f(global.grid_size * 0.75, global.grid_size * 0.75, global.grid_size * 0.75), global.grid->get_grid_position(4, 7), ofVec3f(2, 0, 0)));
+
+    // Fifth row of cars
+    cars.push_back(new Car(5, ofVec3f(global.grid_size * 0.75, global.grid_size * 0.75, global.grid_size * 0.75), global.grid->get_grid_position(5, 3), ofVec3f(1.5, 0, 0)));
+    cars.push_back(new Car(5, ofVec3f(global.grid_size * 0.75, global.grid_size * 0.75, global.grid_size * 0.75), global.grid->get_grid_position(5, 8), ofVec3f(1.5, 0, 0)));
+
+    // First row of platforms
+    platforms.push_back(new Platform(1, ofVec3f(global.grid_size * 3, global.grid_size * 0.5, global.grid_size * 0.75), global.grid->get_grid_position(9, 1), ofVec3f(-0.5, 0, 0)));
+    platforms.push_back(new Platform(1, ofVec3f(global.grid_size * 3, global.grid_size * 0.5, global.grid_size * 0.75), global.grid->get_grid_position(9, 8), ofVec3f(-0.5, 0, 0)));
+
+
 }

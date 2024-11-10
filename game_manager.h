@@ -11,6 +11,7 @@
 class Frog;
 class Camera; 
 class Car;
+class Platform;
 
 class Game{
     public: 
@@ -27,10 +28,18 @@ class Game{
 
         void key_released(int key);
 
-        ofVec3f get_grid_position(int row, int column);
+        //ofVec3f get_grid_position(int row, int column);
+        //ofVec2f get_grid_row_column(ofVec3f position);
         bool is_valid(int row, int column);
 
         bool check_collision(ofVec3f &pos1, ofVec3f &dim1, ofVec3f &pos2, ofVec3f &dim2);
+
+        void reset_player();
+
+        void draw_scene();
+
+        void course_setup();
+
     private: 
         /*
         ******* Camera definitions ******* 
@@ -93,4 +102,5 @@ class Game{
         void try_move(int new_row, int new_column); // Try to move the player to a new grid cell (check if it's valid)
 
         std::vector<Car*> cars; // List of cars
+        std::vector<Platform*> platforms; // List of platforms
 };

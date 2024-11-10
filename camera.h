@@ -20,10 +20,10 @@ public:
     void update(float delta_time, const ofVec3f& player_pos);
     void apply(CameraMode mode, const ofVec3f& player_pos, const Frog* frog);
 
-private:
     void apply_ortho_top_down(const ofVec3f& player_pos);
     void apply_perspective_player(const ofVec3f& player_pos);
     void apply_first_person(const ofVec3f& player_pos, const Frog* frog);
+private:
 
     GLfloat theta_fov; // Field of view angle
     GLfloat cam_dist; // Distance from the camera to the player

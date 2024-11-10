@@ -20,9 +20,13 @@ class Frog {
         void update_jump(float delta_time);
         void update_rotation(float delta_time);
         void update_explosion(float delta_time);
+        void update_drowning(float delta_time);
 
         void explosion();
         void burst_effect();
+        
+        void drown();
+        void splash_effect();
 
         // Public variables
         ofVec3f eye_vector;        
@@ -51,6 +55,11 @@ class Frog {
         bool is_alive;
         bool is_bursting;
 
+        bool is_drowning;
+        bool is_splashing;
+        GLfloat drowning_timer;
+        GLfloat drowning_duration;
+        GLfloat drowning_jump_height; 
 
     private:
         // Drawing methods

@@ -6,7 +6,7 @@
 
 class Car{
     public: 
-        Car(ofVec3f dimensions, ofVec3f position, ofVec3f velocity);
+        Car(int car_type, ofVec3f dimensions, ofVec3f position, ofVec3f velocity);
 
         void draw();
 
@@ -15,5 +15,7 @@ class Car{
         ofVec3f velocity;
         ofVec3f dimensions;
         ofVec3f position;
+
+        int car_type;
 
 };
