@@ -70,6 +70,7 @@ class Game{
         */
         Frog* frog;
         std::vector<Frog*> dead_frogs;
+        bool draw_frog;
         /*
         ******* End of frog definitions ******* 
         */

@@ -17,6 +17,8 @@ class Grid {
         int get_columns();
         float get_size();
 
+        int closest_column(ofVec3f position);
+
         int top_river_row;
         int bottom_river_row;
 

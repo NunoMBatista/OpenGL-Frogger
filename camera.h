@@ -23,6 +23,8 @@ public:
     void apply_ortho_top_down(const ofVec3f& player_pos);
     void apply_perspective_player(const ofVec3f& player_pos);
     void apply_first_person(const ofVec3f& player_pos, const Frog* frog);
+    
+    bool is_camera_transitioning;
 private:
 
     GLfloat theta_fov; // Field of view angle
@@ -34,5 +36,4 @@ private:
     ofVec3f current_cam_look;
     ofVec3f target_cam_look; // Target camera look-at point for transitions
     float camera_transition_speed;
-    bool is_camera_transitioning;
 };

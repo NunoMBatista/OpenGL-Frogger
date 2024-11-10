@@ -16,7 +16,8 @@ public:
 
     GLfloat left_out_of_bounds;
     GLfloat right_out_of_bounds;
-    
+
+    GLfloat base_element_speed;    
    
 };
 

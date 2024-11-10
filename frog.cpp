@@ -60,6 +60,8 @@ Frog::Frog(ofVec3f dimensions, ofVec3f position)
     drowning_duration = 0.2f;
 
     f_scale = 1.0f;
+
+    on_plat = false;
 }
 
 // Destructor
@@ -205,10 +207,15 @@ void Frog::draw(){
 
     // Draw the frog
     glPushMatrix();
-        glTranslatef(position.x, position.y - leg_h*2, position.z);
+        glTranslatef(position.x, position.y - leg_h*3, position.z);
 
         // Apply vertical offset for jump
         float y_offset = 0.0f;
+        
+        if(on_plat){
+            y_offset += 10;
+        }
+
         if(is_jumping) {
             float t = jump_progress / jump_duration;
             y_offset = jump_height * sin(PI * t);

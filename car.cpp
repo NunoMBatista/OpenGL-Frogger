@@ -9,8 +9,9 @@ Car::Car(int car_type, ofVec3f dimensions, ofVec3f position, ofVec3f velocity){
     this->car_type = car_type;
 }
 
-void Car::update(){
-    position += velocity;
+void Car::update(GLfloat delta_time){
+    // position += velocity;
+    position += velocity * delta_time;
 
     if(position.x < global.left_out_of_bounds){
         position.x = global.right_out_of_bounds;

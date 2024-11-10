@@ -10,7 +10,7 @@ class Car{
 
         void draw();
 
-        void update();
+        void update(GLfloat delta_time);
 
         ofVec3f velocity;
         ofVec3f dimensions;

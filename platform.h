@@ -16,14 +16,23 @@ class Platform{
 
         void draw();
 
-        void update();
+        void update(GLfloat delta_time);
 
         void draw_log();
+
         void draw_turtle();
+        void draw_shell();
+        void draw_head();
+        void draw_legs();
 
         ofVec3f velocity;
         ofVec3f dimensions;
         ofVec3f position;
 
         int platform_type;
+
+    private: 
+        ofVec3f turtle_shell_dimensions;
+        ofVec3f turtle_head_dimensions;
+        ofVec3f turtle_leg_dimensions;
 };

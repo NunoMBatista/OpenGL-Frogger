@@ -71,3 +71,7 @@ int Grid::get_columns() {
 float Grid::get_size() {
     return grid_size;
 }
+
+int Grid::closest_column(ofVec3f position){
+    return round(position.x / grid_size);
+}

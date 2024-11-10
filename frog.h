@@ -55,6 +55,8 @@ class Frog {
         bool is_alive;
         bool is_bursting;
 
+        bool on_plat;
+
         bool is_drowning;
         bool is_splashing;
         GLfloat drowning_timer;
