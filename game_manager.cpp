@@ -75,6 +75,14 @@ void Game::update() {
         car->update();
     }
 
+    bool on_platform_grid = false;
+    for(auto& platform : platforms){
+        if(platform->is_frog_on_grid(frog->position)){
+            on_platform_grid = true;
+            break;
+        }
+    }
+
     // Check for collisions
     for(auto car: cars){
         if(check_collision(frog->position, frog->dimensions, car->position, car->dimensions)){
@@ -88,10 +96,10 @@ void Game::update() {
         }
     }
 
-    bool on_plat = false;    
+    bool on_plat = on_platform_grid;    
     // Check if the frog is in the river
     if((player_row >= global.grid->bottom_river_row) && (player_row <= global.grid->top_river_row)){
-        // Check if the frog is on a platform (log or turtle)
+        // Check if the frog is on a platform grid cell
         if(!on_plat && !frog->is_drowning && !frog->is_splashing && !frog->is_jumping && !frog->is_moving){
             // Copy the frog to the dead_frogs vector
             Frog* dead_frog = new Frog(*frog);
@@ -289,5 +297,8 @@ void Game::course_setup(){
     platforms.push_back(new Platform(1, ofVec3f(global.grid_size * 3, global.grid_size * 0.5, global.grid_size * 0.75), global.grid->get_grid_position(9, 1), ofVec3f(-0.5, 0, 0)));
     platforms.push_back(new Platform(1, ofVec3f(global.grid_size * 3, global.grid_size * 0.5, global.grid_size * 0.75), global.grid->get_grid_position(9, 8), ofVec3f(-0.5, 0, 0)));
 
-
+    // Initialize grid for each platform
+    for(auto& platform : platforms){
+        platform->initialize_grid();
+    }
 }
