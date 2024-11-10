@@ -79,14 +79,6 @@ void Game::update() {
         car->update(delta_time);
     }
 
-    bool on_platform_grid = false;
-    for(auto& platform : platforms){
-        if(platform->is_frog_on_grid(frog->position)){
-            on_platform_grid = true;
-            break;
-        }
-    }
-
     // Check for collisions
     for(auto car: cars){
         if(check_collision(frog->position, frog->dimensions, car->position, car->dimensions)){
@@ -109,12 +101,13 @@ void Game::update() {
             frog->on_plat = true;
             frog->position += platform->velocity;
             player_position = frog->position;
+            player_position.y += global.platform_offset_y;
         }
     }
 
     // Check if the frog is in the river
     if((player_row >= global.grid->bottom_river_row) && (player_row <= global.grid->top_river_row)){
-        // Check if the frog is on a platform grid cell
+        // Check if the frog is on a platform (log or turtle)
         if(!on_plat && !frog->is_drowning && !frog->is_splashing && !frog->is_jumping && !frog->is_moving){
             // Copy the frog to the dead_frogs vector
             Frog* dead_frog = new Frog(*frog);
@@ -327,7 +320,6 @@ void Game::course_setup(){
     // platforms.push_back(new Platform(1, ofVec3f(global.grid_size * 3, global.grid_size * 0.5, global.grid_size * 0.75), global.grid->get_grid_position(9, 1), ofVec3f(global.base_element_speed * 0.5, 0, 0)));
     // platforms.push_back(new Platform(1, ofVec3f(global.grid_size * 3, global.grid_size * 0.5, global.grid_size * 0.75), global.grid->get_grid_position(9, 8), ofVec3f(global.base_element_speed * 0.5, 0, 0)));
 
-<<<<<<< HEAD
     // // Second row of platforms
     // platforms.push_back(new Platform(1, ofVec3f(global.grid_size * 3, global.grid_size * 0.5, global.grid_size * 0.75), global.grid->get_grid_position(10, 3), ofVec3f(-global.base_element_speed * 1.25, 0, 0)));
     // platforms.push_back(new Platform(1, ofVec3f(global.grid_size * 3, global.grid_size * 0.5, global.grid_size * 0.75), global.grid->get_grid_position(10, 10), ofVec3f(-global.base_element_speed * 1.25, 0, 0)));
@@ -338,10 +330,4 @@ void Game::course_setup(){
 
     platforms.push_back(new Platform(2, ofVec3f(global.grid_size * 1, global.grid_size * 0.5, global.grid_size * 0.75), global.grid->get_grid_position(2, 7), ofVec3f(0, 0, 0)));
 
-=======
-    // Initialize grid for each platform
-    for(auto& platform : platforms){
-        platform->initialize_grid();
-    }
->>>>>>> a553dac1df9531293d8c747fc2cc0a6d92c2e261
 }

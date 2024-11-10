@@ -63,9 +63,6 @@ class Frog {
         GLfloat drowning_duration;
         GLfloat drowning_jump_height; 
 
-        // Snap the frog's position to the nearest grid cell
-        void snap_to_grid(const ofVec3f& grid_position);
-
     private:
         // Drawing methods
         void draw_body();

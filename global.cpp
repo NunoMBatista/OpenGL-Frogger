@@ -14,4 +14,5 @@ Global::Global() {
     right_out_of_bounds = grid->get_grid_position(1, grid_columns+2).x;
 
     base_element_speed = 50.0f;
+    platform_offset_y = 10.0f;
 }

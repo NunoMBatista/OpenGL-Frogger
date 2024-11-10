@@ -1,8 +1,7 @@
 #include "platform.h"
 #include "global.h"
 
-Platform::Platform(int platform_type, ofVec3f dimensions, ofVec3f position, ofVec3f velocity)
-    : grid_size(100.0f), origin(/* platform origin */) {
+Platform::Platform(int platform_type, ofVec3f dimensions, ofVec3f position, ofVec3f velocity){
     this->dimensions = dimensions;
     
     // Adjust position to center of the platform

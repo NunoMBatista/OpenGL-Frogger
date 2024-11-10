@@ -213,7 +213,7 @@ void Frog::draw(){
         float y_offset = 0.0f;
         
         if(on_plat){
-            y_offset += 10;
+            y_offset += global.platform_offset_y;
         }
 
         if(is_jumping) {
@@ -360,28 +360,12 @@ void Frog::turn(Direction new_direction) {
 }
 
 void Frog::start_move(const ofVec3f& start_pos, const ofVec3f& target_pos) {
-    // Snap target position to nearest grid cell
-    ofVec3f snapped_target = snap_to_nearest_grid(target_pos);
     start_position = start_pos;
-    target_position = snapped_target;
+    target_position = target_pos;
     is_moving = true;
     movement_timer = 0;
     is_jumping = true;
     jump_progress = 0.0f;
-}
-
-void Frog::snap_to_grid(const ofVec3f& grid_position) {
-    position = grid_position;
-}
-
-// Helper function to find the nearest grid cell position
-ofVec3f Frog::snap_to_nearest_grid(const ofVec3f& pos){
-    // Assume grid size is defined, e.g., 100 units
-    float grid_size = 100.0f;
-    float snapped_x = round(pos.x / grid_size) * grid_size;
-    float snapped_y = round(pos.y / grid_size) * grid_size;
-    float snapped_z = round(pos.z / grid_size) * grid_size;
-    return ofVec3f(snapped_x, snapped_y, snapped_z);
 }
 
 void Frog::explosion() {

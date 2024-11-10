@@ -70,16 +70,14 @@ void Camera::apply_perspective_player(const ofVec3f& player_pos) {
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
     
-    // Use the snapped position for camera positioning
-    ofVec3f snapped_pos = player_pos; // Assume player_pos is already snapped
-    target_cam_position = ofVec3f(snapped_pos.x, snapped_pos.y + 200, snapped_pos.z - 300);
-    target_cam_look = snapped_pos;
+    target_cam_position = ofVec3f(player_pos.x, player_pos.y, player_pos.z - 300);
+    target_cam_look = player_pos;
     is_camera_transitioning = true;
     
     lookat(
-        current_cam_position.x,     current_cam_position.y,     current_cam_position.z,
-        current_cam_look.x,         current_cam_look.y,         current_cam_look.z,
-        0,                          1,                          0
+        current_cam_position.x,     current_cam_position.y + 200,     current_cam_position.z,
+            current_cam_look.x,               current_cam_look.y,         current_cam_look.z,
+                             0,                                1,                          0
     );
 }
 
