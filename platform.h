@@ -14,6 +14,12 @@ class Platform{
     public: 
         Platform(int platform_type, ofVec3f dimensions, ofVec3f position, ofVec3f velocity);
 
+        // Initialize the grid for this platform
+        void initialize_grid();
+
+        // Check if the frog is on a valid grid cell
+        bool is_frog_on_grid(const ofVec3f& frog_position) const;
+
         void draw();
 
         void update(GLfloat delta_time);
