@@ -58,6 +58,7 @@ Frog::Frog(ofVec3f dimensions, ofVec3f position)
 
     is_drowning = false;
     is_splashing = false;
+    is_winning = false;
 
     drowning_jump_height = dimensions.y * 1;
     drowning_duration = 0.2f;
@@ -198,14 +199,19 @@ void Frog::update_rotation(float delta_time) {
 // Draw frog
 void Frog::draw(){
     // Draw the particles
-    if(is_bursting || is_splashing){
+    if(is_bursting || is_splashing || is_winning){
         // Draw the particles
         if(particles.size() == 0){
             is_bursting = false;
-            is_alive = false;
+            is_splashing = false;
+            is_winning = false; 
+            if(!is_winning)
+                is_alive = false;
         }
         for(auto particle : particles){
-            particle->draw();
+            if(particle->lifespan > 0){
+                particle->draw();
+            }
         }
     }
 
@@ -398,7 +404,6 @@ void Frog::burst_effect(){
 void Frog::drown(){
     is_drowning = true;
     drowning_timer = 0;
-
 }
 
 void Frog::splash_effect(){
@@ -415,5 +420,17 @@ void Frog::splash_effect(){
         
         particles.push_back(particle);
     }
+}
 
+void Frog::winning_effect(){
+    is_winning = true; 
+    for(int i = 0; i < 300; i++){
+        Particle* particle = new Particle(
+            position,
+            ofVec3f(ofRandom(-1, 1), ofRandom(-1, 1), ofRandom(-1, 1)),
+            ofVec3f(ofRandom(0.8, 1), ofRandom(0.8, 1), ofRandom(0, 0.5)),
+            ofRandom(0.5, 1)
+        );
+        particles.push_back(particle);
+    }
 }

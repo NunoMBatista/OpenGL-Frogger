@@ -24,11 +24,7 @@ void Car::update(GLfloat delta_time){
 
 void Car::draw(){
     if(car_type == 1){
-        glPushMatrix();
-            glTranslatef(position.x, position.y, position.z);
-            glScalef(dimensions.x, dimensions.y, dimensions.z);
-            cube_unit(1, 0, 0);
-        glPopMatrix();
+        draw_car_type_1();
     }
     if(car_type == 2){
         glPushMatrix();
@@ -58,6 +54,12 @@ void Car::draw(){
             cube_unit(1, 1, 0);
         glPopMatrix();
     }
-
 }
 
+void Car::draw_car_type_1(){
+    glPushMatrix();
+        glTranslatef(position.x, position.y, position.z);
+        glScalef(dimensions.x, dimensions.y, dimensions.z);
+        cube_unit(1, 0, 0);
+    glPopMatrix();
+}

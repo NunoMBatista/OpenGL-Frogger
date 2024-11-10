@@ -28,6 +28,8 @@ class Frog {
         void drown();
         void splash_effect();
 
+        void winning_effect();
+
         // Public variables
         ofVec3f eye_vector;        
         Direction direction;
@@ -60,6 +62,7 @@ class Frog {
 
         bool is_drowning;
         bool is_splashing;
+        bool is_winning; 
         GLfloat drowning_timer;
         GLfloat drowning_duration;
         GLfloat drowning_jump_height; 

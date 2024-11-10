@@ -11,9 +11,9 @@ Platform::Platform(int platform_type, ofVec3f dimensions, ofVec3f position, ofVe
     this->velocity = velocity;
     this->platform_type = platform_type;
 
-    turtle_shell_dimensions = dimensions * 0.7;
-    turtle_head_dimensions = dimensions * 0.3;
-    turtle_leg_dimensions = dimensions * 0.2;
+    turtle_shell_dimensions = dimensions * 0.6;
+    turtle_head_dimensions = dimensions * 0.4;
+    turtle_leg_dimensions = dimensions * 0.1;
 
 }
 
@@ -51,9 +51,21 @@ void Platform::draw_turtle(){
     glPushMatrix();
         glTranslatef(position.x, -global.grid_size/2, position.z);
         draw_shell();
+
+        // Legs and tail
+        glPushMatrix();
+            glTranslatef(0, turtle_shell_dimensions.y * 0.2, 0);
+            draw_legs();
+        glPopMatrix();
+
+        // In front of the shell
+        glPushMatrix();
+            glTranslatef(-turtle_shell_dimensions.x * 0.5, 0, 0);
+            draw_head();
+        glPopMatrix();
+        
     glPopMatrix();
 
-    // Green head and legs
 
 }
 
@@ -80,9 +92,75 @@ void Platform::draw_shell(){
 }
 
 void Platform::draw_head(){
+    glPushMatrix();
+        glScalef(turtle_head_dimensions.x, turtle_head_dimensions.y, turtle_head_dimensions.z);
+        cube_unit(0, 0.7, 0);
+    glPopMatrix();
+
+    // Eyes
+    glPushMatrix();
+        glTranslatef(-turtle_head_dimensions.x * 0.5, turtle_head_dimensions.y * 0.5, turtle_head_dimensions.z * 0.3);
+        glScalef(turtle_head_dimensions.x * 0.3, turtle_head_dimensions.y * 0.6, turtle_head_dimensions.z * 0.35);
+        cube_unit(1, 1, 1);
+    glPopMatrix();
+    
+    glPushMatrix();
+        glTranslatef(-turtle_head_dimensions.x * 0.5, turtle_head_dimensions.y * 0.5, -turtle_head_dimensions.z * 0.3);
+        glScalef(turtle_head_dimensions.x * 0.3, turtle_head_dimensions.y * 0.6, turtle_head_dimensions.z * 0.35);
+        cube_unit(1, 1, 1);
+    glPopMatrix();
+
+    // Pupils
+    glPushMatrix();
+        glTranslatef(-turtle_head_dimensions.x * 0.6, turtle_head_dimensions.y * 0.3, turtle_head_dimensions.z * 0.3);
+        glScalef(turtle_head_dimensions.x * 0.3, turtle_head_dimensions.y * 0.3, turtle_head_dimensions.z * 0.3);
+        //glScalef(turtle_head_dimensions.x, turtle_head_dimensions.y, turtle_head_dimensions.z);
+        cube_unit(0, 0, 0);
+    glPopMatrix();
+
+    glPushMatrix();
+        glTranslatef(-turtle_head_dimensions.x * 0.6, turtle_head_dimensions.y * 0.3, -turtle_head_dimensions.z * 0.3);
+        glScalef(turtle_head_dimensions.x * 0.3, turtle_head_dimensions.y * 0.3, turtle_head_dimensions.z * 0.3);
+        cube_unit(0, 0, 0);
+    glPopMatrix();
 
 }
 
 void Platform::draw_legs(){
+    glPushMatrix();
+        glTranslatef(-turtle_shell_dimensions.x * 0.5, 0, turtle_shell_dimensions.z * 0.5);
+        draw_leg();
+    glPopMatrix();
+
+    glPushMatrix();
+        glTranslatef(-turtle_shell_dimensions.x * 0.5, 0, -turtle_shell_dimensions.z * 0.5);
+        draw_leg();
+    glPopMatrix();
+
+    glPushMatrix(); 
+        glTranslatef(turtle_shell_dimensions.x * 0.5, 0, turtle_shell_dimensions.z * 0.5);
+        draw_leg();
+    glPopMatrix();
+
+    glPushMatrix();
+        glTranslatef(turtle_shell_dimensions.x * 0.5, 0, -turtle_shell_dimensions.z * 0.5);
+        draw_leg();
+    glPopMatrix();
+
+    // Tail
+    glPushMatrix();
+        glTranslatef(turtle_shell_dimensions.x * 0.5, 0, 0);
+        glScalef(1.5, 1, 1.5);
+        draw_leg();
+    glPopMatrix();
+
+
+}
+
+void Platform::draw_leg(){
+    glPushMatrix();
+        glScalef(turtle_leg_dimensions.x, turtle_leg_dimensions.y, turtle_leg_dimensions.z);
+        cube_unit(0, 0.7, 0);
+    glPopMatrix();
 
 }

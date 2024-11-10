@@ -24,6 +24,7 @@ class Platform{
         void draw_shell();
         void draw_head();
         void draw_legs();
+        void draw_leg();
 
         ofVec3f velocity;
         ofVec3f dimensions;
