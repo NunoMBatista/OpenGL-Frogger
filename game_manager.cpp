@@ -6,6 +6,7 @@
 #include "platform.h"
 #include <cmath>
 #include "stages.h"
+#include "ofImage.h"
 
 Game::Game() {
     glEnable(GL_DEPTH_TEST); // Make it possible to see the depth of the objects

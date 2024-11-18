@@ -40,9 +40,19 @@ void Platform::update(GLfloat delta_time){
 
 void Platform::draw_log(){
     glPushMatrix();
-        glTranslatef(position.x, -global.grid_size/2, position.z);
-        glScalef(dimensions.x, dimensions.y, dimensions.z);
-        cube_unit(0.5, 0.35, 0.05);
+        glPushMatrix();
+            glTranslatef(position.x, -global.grid_size/2, position.z);
+            glScalef(dimensions.x, dimensions.y, dimensions.z);
+            cube_unit(0.3, 0.15, 0.0);
+        glPopMatrix();
+
+        glPushMatrix();
+            glTranslatef(position.x, -global.grid_size/2, position.z);
+            glScalef(dimensions.x*1.03, dimensions.y*0.9, dimensions.z*0.9);
+            cube_unit(0.55, 0.4, 0.1);
+        glPopMatrix();
+
+
     glPopMatrix();
 }
 
@@ -114,7 +124,6 @@ void Platform::draw_head(){
     glPushMatrix();
         glTranslatef(-turtle_head_dimensions.x * 0.6, turtle_head_dimensions.y * 0.3, turtle_head_dimensions.z * 0.3);
         glScalef(turtle_head_dimensions.x * 0.3, turtle_head_dimensions.y * 0.3, turtle_head_dimensions.z * 0.3);
-        //glScalef(turtle_head_dimensions.x, turtle_head_dimensions.y, turtle_head_dimensions.z);
         cube_unit(0, 0, 0);
     glPopMatrix();
 

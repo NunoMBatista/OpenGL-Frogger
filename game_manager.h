@@ -28,8 +28,6 @@ class Game{
 
         void key_released(int key);
 
-        //ofVec3f get_grid_position(int row, int column);
-        //ofVec2f get_grid_row_column(ofVec3f position);
         bool is_valid(int row, int column);
 
         bool check_collision(ofVec3f &pos1, ofVec3f &dim1, ofVec3f &pos2, ofVec3f &dim2);
@@ -75,7 +73,6 @@ class Game{
         std::vector<Frog*> finished_frogs;
         int finished_frogs_count;
         bool draw_frog;
-
 
         /*
         ******* End of frog definitions ******* 

@@ -24,7 +24,7 @@ inline void stage_1(std::vector<Car*> &cars, std::vector<Platform*> &platforms )
     cars.push_back(new Car(3, ofVec3f(global.grid_size * 0.9, global.grid_size * 0.75, global.grid_size * 0.75), global.grid->get_grid_position(3, 10), ofVec3f(-global.base_element_speed * 0.8, 0, 0)));
 
     // Fourth row of cars
-    cars.push_back(new Car(4, ofVec3f(global.grid_size * 0.9, global.grid_size * 0.75, global.grid_size * 0.75), global.grid->get_grid_position(4, 7), ofVec3f(global.base_element_speed * 2, 0, 0)));
+    cars.push_back(new Car(4, ofVec3f(global.grid_size * 0.9, global.grid_size * 0.75, global.grid_size * 0.75), global.grid->get_grid_position(4, 7), ofVec3f(global.base_element_speed * 2.5, 0, 0)));
 
     // Fifth row of cars
     cars.push_back(new Car(5, ofVec3f(global.grid_size * 2, global.grid_size * 0.75, global.grid_size * 0.75), global.grid->get_grid_position(5, 3), ofVec3f(-global.base_element_speed * 1.5, 0, 0)));
@@ -68,26 +68,31 @@ inline void stage_1(std::vector<Car*> &cars, std::vector<Platform*> &platforms )
 
 inline void stage_2(std::vector<Car*> &cars, std::vector<Platform*> &platforms ){
     // First row of cars 
-    cars.push_back(new Car(1, ofVec3f(global.grid_size * 0.9, global.grid_size * 0.75, global.grid_size * 0.75), global.grid->get_grid_position(1, 1), ofVec3f(-global.base_element_speed * 1.5, 0, 0)));
-    cars.push_back(new Car(1, ofVec3f(global.grid_size * 0.9, global.grid_size * 0.75, global.grid_size * 0.75), global.grid->get_grid_position(1, 5), ofVec3f(-global.base_element_speed * 1.5, 0, 0)));
-    cars.push_back(new Car(1, ofVec3f(global.grid_size * 0.9, global.grid_size * 0.75, global.grid_size * 0.75), global.grid->get_grid_position(1, 9), ofVec3f(-global.base_element_speed * 1.5, 0, 0)));
+    cars.push_back(new Car(1, ofVec3f(global.grid_size * 0.9, global.grid_size * 0.75, global.grid_size * 0.75), global.grid->get_grid_position(1, 1), ofVec3f(-global.base_element_speed * 1.3, 0, 0)));
+    cars.push_back(new Car(1, ofVec3f(global.grid_size * 0.9, global.grid_size * 0.75, global.grid_size * 0.75), global.grid->get_grid_position(1, 5), ofVec3f(-global.base_element_speed * 1.3, 0, 0)));
+    cars.push_back(new Car(1, ofVec3f(global.grid_size * 0.9, global.grid_size * 0.75, global.grid_size * 0.75), global.grid->get_grid_position(1, 9), ofVec3f(-global.base_element_speed * 1.3, 0, 0)));
+    cars.push_back(new Car(1, ofVec3f(global.grid_size * 0.9, global.grid_size * 0.75, global.grid_size * 0.75), global.grid->get_grid_position(1, 11), ofVec3f(-global.base_element_speed * 1.3, 0, 0)));
 
     // Second row of cars
-    cars.push_back(new Car(2, ofVec3f(global.grid_size * 0.9, global.grid_size * 0.75, global.grid_size * 0.75), global.grid->get_grid_position(2, 1), ofVec3f(global.base_element_speed * 1.5, 0, 0)));
-    cars.push_back(new Car(2, ofVec3f(global.grid_size * 0.9, global.grid_size * 0.75, global.grid_size * 0.75), global.grid->get_grid_position(2, 9), ofVec3f(global.base_element_speed * 1.5, 0, 0)));
-    cars.push_back(new Car(2, ofVec3f(global.grid_size * 0.9, global.grid_size * 0.75, global.grid_size * 0.75), global.grid->get_grid_position(2, 13), ofVec3f(global.base_element_speed * 1.5, 0, 0)));
+    cars.push_back(new Car(2, ofVec3f(global.grid_size * 0.9, global.grid_size * 0.75, global.grid_size * 0.75), global.grid->get_grid_position(2, 1), ofVec3f(global.base_element_speed * 1.3, 0, 0)));
+    cars.push_back(new Car(2, ofVec3f(global.grid_size * 0.9, global.grid_size * 0.75, global.grid_size * 0.75), global.grid->get_grid_position(2, 5), ofVec3f(global.base_element_speed * 1.3, 0, 0)));
+    cars.push_back(new Car(2, ofVec3f(global.grid_size * 0.9, global.grid_size * 0.75, global.grid_size * 0.75), global.grid->get_grid_position(2, 9), ofVec3f(global.base_element_speed * 1.3, 0, 0)));
+    cars.push_back(new Car(2, ofVec3f(global.grid_size * 0.9, global.grid_size * 0.75, global.grid_size * 0.75), global.grid->get_grid_position(2, 13), ofVec3f(global.base_element_speed * 1.3, 0, 0)));
 
     // Third row of cars
-    cars.push_back(new Car(3, ofVec3f(global.grid_size * 0.9, global.grid_size * 0.75, global.grid_size * 0.75), global.grid->get_grid_position(3, 2), ofVec3f(-global.base_element_speed * 1.2, 0, 0)));
+    cars.push_back(new Car(3, ofVec3f(global.grid_size * 0.9, global.grid_size * 0.75, global.grid_size * 0.75), global.grid->get_grid_position(3, 1), ofVec3f(-global.base_element_speed * 1.2, 0, 0)));
     cars.push_back(new Car(3, ofVec3f(global.grid_size * 0.9, global.grid_size * 0.75, global.grid_size * 0.75), global.grid->get_grid_position(3, 6), ofVec3f(-global.base_element_speed * 1.2, 0, 0)));
-    cars.push_back(new Car(3, ofVec3f(global.grid_size * 0.9, global.grid_size * 0.75, global.grid_size * 0.75), global.grid->get_grid_position(3, 10), ofVec3f(-global.base_element_speed * 1.2, 0, 0)));
+    cars.push_back(new Car(3, ofVec3f(global.grid_size * 0.9, global.grid_size * 0.75, global.grid_size * 0.75), global.grid->get_grid_position(3, 11), ofVec3f(-global.base_element_speed * 1.2, 0, 0)));
+    cars.push_back(new Car(3, ofVec3f(global.grid_size * 0.9, global.grid_size * 0.75, global.grid_size * 0.75), global.grid->get_grid_position(3, 13), ofVec3f(-global.base_element_speed * 1.2, 0, 0)));
 
     // Fourth row of cars
-    cars.push_back(new Car(4, ofVec3f(global.grid_size * 0.9, global.grid_size * 0.75, global.grid_size * 0.75), global.grid->get_grid_position(4, 7), ofVec3f(global.base_element_speed * 2.5, 0, 0)));
+    cars.push_back(new Car(4, ofVec3f(global.grid_size * 0.9, global.grid_size * 0.75, global.grid_size * 0.75), global.grid->get_grid_position(4, 7), ofVec3f(global.base_element_speed * 3, 0, 0)));
+    cars.push_back(new Car(4, ofVec3f(global.grid_size * 0.9, global.grid_size * 0.75, global.grid_size * 0.75), global.grid->get_grid_position(4, 9), ofVec3f(global.base_element_speed * 3, 0, 0)));
 
     // Fifth row of cars
     cars.push_back(new Car(5, ofVec3f(global.grid_size * 2, global.grid_size * 0.75, global.grid_size * 0.75), global.grid->get_grid_position(5, 3), ofVec3f(-global.base_element_speed * 2, 0, 0)));
-    cars.push_back(new Car(5, ofVec3f(global.grid_size * 2, global.grid_size * 0.75, global.grid_size * 0.75), global.grid->get_grid_position(5, 8), ofVec3f(-global.base_element_speed * 2, 0, 0)));
+    cars.push_back(new Car(5, ofVec3f(global.grid_size * 2, global.grid_size * 0.75, global.grid_size * 0.75), global.grid->get_grid_position(5, 6), ofVec3f(-global.base_element_speed * 2, 0, 0)));
+    cars.push_back(new Car(5, ofVec3f(global.grid_size * 2, global.grid_size * 0.75, global.grid_size * 0.75), global.grid->get_grid_position(5, 11), ofVec3f(-global.base_element_speed * 2, 0, 0)));
 
     cars.push_back(new Car(1, ofVec3f(global.grid_size * 0.9, global.grid_size * 0.75, global.grid_size * 0.75), global.grid->get_grid_position(6, 1), ofVec3f(global.base_element_speed * 1.7, 0, 0)));
     cars.push_back(new Car(1, ofVec3f(global.grid_size * 0.9, global.grid_size * 0.75, global.grid_size * 0.75), global.grid->get_grid_position(6, 6), ofVec3f(global.base_element_speed * 1.7, 0, 0)));

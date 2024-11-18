@@ -13,7 +13,7 @@ Car::Car(int car_type, ofVec3f dimensions, ofVec3f position, ofVec3f velocity){
     this->direction_sign = velocity.x/abs(velocity.x);
 
     w_dim = ofVec3f(10, 10, 3);
-    w_rot = 45;
+    w_rot = ofRandom(0, 90);
 }
 
 void Car::update(GLfloat delta_time){

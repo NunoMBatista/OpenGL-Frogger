@@ -42,11 +42,11 @@ void Grid::draw(){
                     else if(i == grid_rows - 2){
                         if((j - 1) % 3 == 0){
                             glScalef(grid_size, 1, grid_size);
-                            cube_unit(0.6, 0.6, 0);
+                            cube_unit(1, 1, 0);
                         }
                         else{
                             glScalef(grid_size, grid_size*4, grid_size);
-                            cube_unit(0, 0.9, 0);
+                            cube_unit(0, 0.6, 0);
                         }
                     }
                     // Draw the grass (purple)
@@ -58,6 +58,47 @@ void Grid::draw(){
             }
         }
     glPopMatrix();
+    // Draw the barrier around the grid
+    for (int i = 0; i <= grid_rows + 2; i++) {
+        for (int j = -6; j <= grid_columns + 5; j++) {
+            if (i < 0 || i >= grid_rows || j < 0 || j >= grid_columns) {
+                ofVec3f position = get_grid_position(i, j);
+                glPushMatrix();
+                    glTranslatef(position.x, position.y, position.z);
+                    
+                    glScalef(grid_size, grid_size, grid_size);
+                    if(i < bottom_river_row-1 && i > 0){
+                        cube_unit(0, 0, 0);
+                    }
+                    else if(i >= bottom_river_row && i <= top_river_row){
+                        cube_unit(0, 0, 0.5);
+                    }
+                    else if(i >= top_river_row){
+                        cube_unit(0, 0.6, 0);
+                    }
+                    else{
+                        cube_unit(0.3, 0.3, 0.3);
+                    }
+
+                glPopMatrix();
+            }
+        }
+    }
+    // Add grey blocks on top of the blue and black barrier blocks
+    for (int i = 0; i <= grid_rows + 2; i++) {
+        for (int j = -6; j <= grid_columns + 5; j++) {
+            if (i < 0 || i >= grid_rows || j < 0 || j >= grid_columns) {
+                if ((i <= top_road_row && i >= bottom_road_row) || (i <= top_river_row && i >= bottom_river_row)) {
+                    ofVec3f position = get_grid_position(i, j);
+                    glPushMatrix();
+                        glTranslatef(position.x, position.y + grid_size, position.z);
+                        glScalef(grid_size, grid_size, grid_size);
+                        cube_unit(0.3, 0.3, 0.3);
+                    glPopMatrix();
+                }
+            }
+        }
+    }
 }
 
 ofVec3f Grid::get_grid_position(int row, int column) {
