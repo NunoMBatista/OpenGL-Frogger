@@ -73,7 +73,6 @@ void Game::update() {
         else{
             // Remove the frog from the dead_frogs vector
             dead_frogs.erase(std::find(dead_frogs.begin(), dead_frogs.end(), dead_frog), dead_frogs.end());
-            delete dead_frog;
         }
     }
 

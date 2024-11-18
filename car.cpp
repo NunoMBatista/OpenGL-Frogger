@@ -7,6 +7,10 @@ Car::Car(int car_type, ofVec3f dimensions, ofVec3f position, ofVec3f velocity){
     this->position = position;
     this->velocity = velocity;
     this->car_type = car_type;
+
+    if(car_type == 5){
+        this->dimensions.x *= 2;
+    }
 }
 
 void Car::update(GLfloat delta_time){
@@ -50,7 +54,7 @@ void Car::draw(){
     if(car_type == 5){
         glPushMatrix();
             glTranslatef(position.x, position.y, position.z);
-            glScalef(dimensions.x*2, dimensions.y, dimensions.z);
+            glScalef(dimensions.x, dimensions.y, dimensions.z);
             cube_unit(1, 1, 0);
         glPopMatrix();
     }
