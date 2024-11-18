@@ -62,7 +62,6 @@ void Game::apply_camera() {
 
 // Update the game state
 void Game::update() {
-    
     float delta_time = ofGetLastFrameTime();
 
     player_position = frog->position;
@@ -160,8 +159,6 @@ void Game::update() {
             reset_player();
         }
     }
-
-
 }
 
 // Draw the main game scene

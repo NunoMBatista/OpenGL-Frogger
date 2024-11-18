@@ -395,7 +395,7 @@ void Frog::burst_effect(){
             p_position,
             ofVec3f(ofRandom(-1, 1), ofRandom(-1, 1), ofRandom(-1, 1)),
             ofVec3f(ofRandom(0, 1), ofRandom(0, 1), ofRandom(0, 1)),
-            ofRandom(0.5, 1)
+            ofRandom(2, 5)
         );
         particles.push_back(particle);
     }
@@ -415,7 +415,7 @@ void Frog::splash_effect(){
             p_position,
             ofVec3f(ofRandom(-0.2, 0.2), ofRandom(0.5, 1), ofRandom(-0.2, 0.2))/3,
             ofVec3f(0, 0, ofRandom(0, 1)),
-            ofRandom(0.2, 0.5)
+            ofRandom(2, 5)
         );
         
         particles.push_back(particle);

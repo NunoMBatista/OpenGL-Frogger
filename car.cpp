@@ -58,7 +58,7 @@ void Car::draw(){
 void Car::draw_generic_car(GLfloat r, GLfloat g, GLfloat b){
     glPushMatrix();
         // Main frame
-        glTranslatef(position.x, position.y - dimensions.y*0.15, position.z);
+        glTranslatef(position.x, position.y - dimensions.y*0.4, position.z);
         glPushMatrix();
             glPushMatrix(); // Main frame
                 glScalef(dimensions.x, dimensions.y*0.3, dimensions.z*0.8);
