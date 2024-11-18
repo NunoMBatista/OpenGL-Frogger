@@ -9,7 +9,7 @@
 
 // Forward declarations
 class Frog;
-class Camera; 
+class Camera;
 class Car;
 class Platform;
 

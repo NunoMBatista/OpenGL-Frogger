@@ -256,8 +256,8 @@ void Game::try_move(int new_row, int new_column) {
             player_column = closest_column;
         }
     }
-    
-    if(global.grid->is_valid(new_row, new_column) && !frog->is_moving) {
+
+    if((global.grid->is_valid(new_row, new_column) || frog->on_plat) && !frog->is_moving) {
         // If the frog is in the river
         if(player_row >= global.grid->bottom_river_row && player_row <= global.grid->top_river_row + 1){
             // If the frog is hopping platforms or leaving the river
@@ -299,7 +299,6 @@ void Game::try_move(int new_row, int new_column) {
 
 void Game::key_pressed(int key) {
     if(frog->is_moving || frog->is_exploding) return;
-    
     switch(key) {
         case '1': 
             camera_mode = ORTHO_TOP_DOWN; 
@@ -316,17 +315,17 @@ void Game::key_pressed(int key) {
     // The movement keys are different in first person, you can only go forwards or backwards and turn left or right
     if(camera_mode == FIRST_PERSON) {
         switch(key) {
-            case 'w': case 'W': move_forward(); break;
-            case 's': case 'S': move_backward(); break;
-            case 'a': case 'A': turn_left(); break;
-            case 'd': case 'D': turn_right(); break;
+            case 'w': case 'W': case OF_KEY_UP:     move_forward(); break;
+            case 's': case 'S': case OF_KEY_DOWN:   move_backward(); break;
+            case 'a': case 'A': case OF_KEY_LEFT:   turn_left(); break;
+            case 'd': case 'D': case OF_KEY_RIGHT:  turn_right(); break;
         }
     } else {
         switch(key) {
-            case 'w': case 'W': try_move(player_row + 1, player_column); frog->turn(UP); break;
-            case 's': case 'S': try_move(player_row - 1, player_column); frog->turn(DOWN); break;
-            case 'a': case 'A': try_move(player_row, player_column - 1); frog->turn(LEFT); break;
-            case 'd': case 'D': try_move(player_row, player_column + 1); frog->turn(RIGHT); break;
+            case 'w': case 'W': case OF_KEY_UP:     try_move(player_row + 1, player_column); frog->turn(UP); break;
+            case 's': case 'S': case OF_KEY_DOWN:   try_move(player_row - 1, player_column); frog->turn(DOWN); break;
+            case 'a': case 'A': case OF_KEY_LEFT:   try_move(player_row, player_column - 1); frog->turn(LEFT); break;
+            case 'd': case 'D': case OF_KEY_RIGHT:  try_move(player_row, player_column + 1); frog->turn(RIGHT); break;
         }
     }
 }
