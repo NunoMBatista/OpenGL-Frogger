@@ -38,7 +38,9 @@ class Game{
 
         void draw_scene();
 
-        void course_setup();
+        void course_setup(int stage);
+
+        void clean_stage();
 
     private: 
         /*
@@ -71,7 +73,10 @@ class Game{
         Frog* frog;
         std::vector<Frog*> dead_frogs;
         std::vector<Frog*> finished_frogs;
+        int finished_frogs_count;
         bool draw_frog;
+
+
         /*
         ******* End of frog definitions ******* 
         */
@@ -106,5 +111,6 @@ class Game{
         std::vector<Car*> cars; // List of cars
         std::vector<Platform*> platforms; // List of platforms
         std::bitset<20> filled_slots;
+        int cur_stage;
 
 };

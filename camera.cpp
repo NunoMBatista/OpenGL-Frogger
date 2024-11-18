@@ -65,7 +65,7 @@ void Camera::apply_ortho_top_down(const ofVec3f& player_pos) {
 }
 
 void Camera::apply_perspective_player(const ofVec3f& player_pos) {
-    perspective(theta_fov, 10, 1000);
+    perspective(theta_fov, 100, 1000);
 
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
@@ -82,7 +82,7 @@ void Camera::apply_perspective_player(const ofVec3f& player_pos) {
 }
 
 void Camera::apply_first_person(const ofVec3f& player_pos, const Frog* frog) {
-    perspective(theta_fov*1.5, 10.0f, 1000.0f);
+    perspective(theta_fov*1.5, 100.0f, 1000.0f);
 
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();

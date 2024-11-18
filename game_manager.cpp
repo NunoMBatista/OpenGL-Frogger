@@ -12,7 +12,7 @@ Game::Game() {
     ofSetBackgroundColor(0, 0, 0); // Set the background color to black
 
     cam = new Camera(60.0f, global.grid->get_grid_position(global.grid_rows / 2, global.grid_columns / 2)); 
-    camera_mode = ORTHO_TOP_DOWN;
+    camera_mode = PERSPECTIVE_PLAYER; // Default camera mode
 
     // Player position
     player_position = global.grid->get_grid_position(0, global.grid_columns / 2); // Start at middle of first row
@@ -32,7 +32,9 @@ Game::Game() {
     cam->setup(player_position, global.grid_columns);
 
     // Setup the course
-    course_setup();
+    cur_stage = 1;
+    course_setup(cur_stage);
+    finished_frogs_count = 0;
 
     draw_frog = true;
 }
@@ -60,6 +62,7 @@ void Game::apply_camera() {
 
 // Update the game state
 void Game::update() {
+    
     float delta_time = ofGetLastFrameTime();
 
     player_position = frog->position;
@@ -111,14 +114,21 @@ void Game::update() {
     // Check if the frog has reached a goal
     if((player_row >= global.grid->top_river_row + 1) && (!frog->is_moving)){
         // Copy the frog to the finished_frogs vector
-        filled_slots[player_column] = 1;
         
+        filled_slots[player_column] = 1;
+        finished_frogs_count++;
+
         Frog* finished_frog = new Frog(*frog);
         finished_frog->rotation = 180;
         finished_frog->winning_effect();
         finished_frogs.push_back(finished_frog);
         // Reset the player frog
         reset_player();
+
+        if(finished_frogs_count >= 5){
+            finished_frogs_count = 0; 
+            course_setup(++cur_stage);
+        }
     }
 
     ofVec3f cur_plat_velocity = ofVec3f(0, 0, 0);
@@ -364,6 +374,23 @@ void Game::reset_player() {
     player_column = global.grid_columns / 2;
 }
 
-void Game::course_setup(){
-    stage_1(cars, platforms);
+void Game::course_setup(int stage){
+    clean_stage();
+    switch(cur_stage){
+        case 1:
+            stage_1(cars, platforms);
+            break;
+        case 2:
+            stage_2(cars, platforms);
+            break;
+    }
+
+}
+
+void Game::clean_stage(){
+    cars.clear();
+    platforms.clear();
+    dead_frogs.clear();
+    finished_frogs.clear();
+    filled_slots.reset();
 }
