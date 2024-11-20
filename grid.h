@@ -5,6 +5,7 @@
 #include <vector>
 
 class Particle;
+class Waterfall;
 
 class Grid {
     public:
@@ -28,9 +29,8 @@ class Grid {
         int top_road_row;
         int bottom_road_row;
 
-        std::vector<Particle*> waterfall;
+		std::vector<Waterfall*> waterfalls;
 
-    private:
         int grid_rows;
         int grid_columns;
         float grid_size;

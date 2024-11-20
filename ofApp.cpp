@@ -1,18 +1,21 @@
 #include "ofApp.h"
 
-
+class Waterfall;
 //--------------------------------------------------------------
 void ofApp::setup(){
+
 }
 
 //--------------------------------------------------------------
 void ofApp::update(){
     game.update();
+
 }
 
 //--------------------------------------------------------------
 void ofApp::draw(){
     game.draw();
+
 }
 
 //--------------------------------------------------------------
@@ -69,3 +72,4 @@ void ofApp::gotMessage(ofMessage msg){
 void ofApp::dragEvent(ofDragInfo dragInfo){ 
 
 }
+

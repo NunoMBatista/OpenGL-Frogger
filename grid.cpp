@@ -15,22 +15,29 @@ Grid::Grid(int rows, int columns, float size) {
     top_road_row = 6;
     bottom_road_row = 1;
 
+    // Add waterfalls at the edges of the river
+    waterfalls.push_back(new Waterfall(
+        get_grid_position(bottom_river_row+2, -1),
+        top_river_row,
+        bottom_river_row
+    ));
+    waterfalls.push_back(new Waterfall(
+        get_grid_position(bottom_river_row+2, grid_columns),
+        top_river_row,
+        bottom_river_row
+    ));
 }
 
 void Grid::update(){
-    for(int i = 0; i < 100; i++){
-        waterfall.push_back(new Particle(
-            ofVec3f(10, 10, 10),
-            ofVec3f(1, 1, 1),
-            ofVec3f(1, 0, 0),
-            100
-        ));
+    for (auto waterfall : waterfalls) {
+        waterfall->update();
     }
 }
 
 void Grid::draw(){
-    for(auto p: waterfall){
-        p->draw();
+    // Draw waterfalls
+    for (auto waterfall : waterfalls) {
+        waterfall->draw();
     }
 
     glPushMatrix();

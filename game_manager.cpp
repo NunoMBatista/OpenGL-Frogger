@@ -38,6 +38,8 @@ Game::Game() {
     finished_frogs_count = 0;
 
     draw_frog = true;
+
+
 }
 
 Game::~Game() {
@@ -55,6 +57,10 @@ Game::~Game() {
     for(auto dead_frog: dead_frogs){
         delete dead_frog;
     }
+
+    for (auto waterfall : global.grid->waterfalls) {
+        delete waterfall;
+    }
 }
 
 void Game::apply_camera() { 
@@ -65,7 +71,7 @@ void Game::apply_camera() {
 void Game::update() {
     float delta_time = ofGetLastFrameTime();
 
-    grid->update();
+    global.grid->update();
 
     player_position = frog->position;
     frog->update(delta_time);

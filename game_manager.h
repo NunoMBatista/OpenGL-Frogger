@@ -82,7 +82,6 @@ class Game{
         ******* Grid definitions ******* 
         */
         ofVec3f target_position; // Where the player is moving to
-
         /*
         ******* End of grid definitions ******* 
         */
