@@ -2,6 +2,7 @@
 #include "grid.h"
 #include "cg_extras.h"
 #include "cg_drawing_extras.h"
+#include "particle.h"
 
 Grid::Grid(int rows, int columns, float size) {
     grid_rows = rows;
@@ -13,9 +14,25 @@ Grid::Grid(int rows, int columns, float size) {
 
     top_road_row = 6;
     bottom_road_row = 1;
+
+}
+
+void Grid::update(){
+    for(int i = 0; i < 100; i++){
+        waterfall.push_back(new Particle(
+            ofVec3f(10, 10, 10),
+            ofVec3f(1, 1, 1),
+            ofVec3f(1, 0, 0),
+            100
+        ));
+    }
 }
 
 void Grid::draw(){
+    for(auto p: waterfall){
+        p->draw();
+    }
+
     glPushMatrix();
         glTranslatef(0, -grid_size/2, 0);
         for(int i = 0; i < grid_rows; i++){

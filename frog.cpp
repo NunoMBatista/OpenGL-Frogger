@@ -49,7 +49,6 @@ Frog::Frog(ofVec3f dimensions, ofVec3f position)
     is_exploding = false;
     explosion_timer = 0;
     explosion_duration = 0.7f;
-    explosion_duration = 0.2f;
     explosion_rotation_speed = 720.0f; // Degrees per second
     explosion_jump_height = dimensions.y * 1.5;
 
@@ -61,7 +60,7 @@ Frog::Frog(ofVec3f dimensions, ofVec3f position)
     is_winning = false;
 
     drowning_jump_height = dimensions.y * 1;
-    drowning_duration = 0.2f;
+    drowning_duration = 0.7f;
 
     f_scale = 1.0f;
 
@@ -388,13 +387,28 @@ void Frog::explosion() {
 
 void Frog::burst_effect(){
     is_bursting = true; 
-    for(int i = 0; i < 200; i++){
+    for(int i = 0; i < 100; i++){
         ofVec3f p_position = position;
         p_position.y += jump_height/2;
+        
+        ofVec3f p_color;
+        // Eyes explosion
+        if(i > 90){
+            p_color = ofVec3f(1, 1, 1);
+        }
+        // Tongue explosion
+        else if(i < 9){
+            p_color = ofVec3f(1, 0, 0);
+        }
+        // Body explosion
+        else{
+            p_color = ofVec3f(0, ofRandom(0.5, 1), 0);
+        }
+        
         Particle* particle = new Particle(
             p_position,
-            ofVec3f(ofRandom(-1, 1), ofRandom(-1, 1), ofRandom(-1, 1)),
-            ofVec3f(ofRandom(0, 1), ofRandom(0, 1), ofRandom(0, 1)),
+            ofVec3f(ofRandom(-0.5, 0.5), ofRandom(-0.5, 0.5), ofRandom(-0.5, 0.5)),
+            p_color,
             ofRandom(2, 5)
         );
         particles.push_back(particle);

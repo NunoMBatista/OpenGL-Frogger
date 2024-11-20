@@ -65,6 +65,8 @@ void Game::apply_camera() {
 void Game::update() {
     float delta_time = ofGetLastFrameTime();
 
+    grid->update();
+
     player_position = frog->position;
     frog->update(delta_time);
     cam->update(delta_time, player_position);
@@ -75,7 +77,7 @@ void Game::update() {
         }
         else{
             // Remove the frog from the dead_frogs vector
-            dead_frogs.erase(std::find(dead_frogs.begin(), dead_frogs.end(), dead_frog), dead_frogs.end());
+            //dead_frogs.erase(std::find(dead_frogs.begin(), dead_frogs.end(), dead_frog), dead_frogs.end());
         }
     }
 

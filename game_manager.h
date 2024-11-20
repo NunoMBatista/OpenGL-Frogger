@@ -83,12 +83,9 @@ class Game{
         */
         ofVec3f target_position; // Where the player is moving to
 
-        const float ROTATION_SPEED = 90.0f; // Degrees per key press
         /*
         ******* End of grid definitions ******* 
         */
-
-
        
         /*
         ******* First person camera definitions ******* 
@@ -104,10 +101,10 @@ class Game{
 
 
         void try_move(int new_row, int new_column); // Try to move the player to a new grid cell (check if it's valid)
+        const float ROTATION_SPEED = 90.0f; // Degrees per key press
 
         std::vector<Car*> cars; // List of cars
         std::vector<Platform*> platforms; // List of platforms
         std::bitset<20> filled_slots;
         int cur_stage;
-
 };

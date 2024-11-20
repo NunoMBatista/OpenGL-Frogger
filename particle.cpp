@@ -22,7 +22,7 @@ void Particle::draw(){
     glPushMatrix();
         glTranslatef(position.x, position.y, position.z);
         glRotatef(ofRandom(0, 360), 1, 1, 1);
-        glScalef(10, 10, 10);
+        glScalef(2*lifespan, 2*lifespan, 2*lifespan);
         //cube_unit(ofRandom(0, 1), ofRandom(0, 1), ofRandom(0, 1));
         cube_unit(color.x, color.y, color.z);
     glPopMatrix();
