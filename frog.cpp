@@ -136,7 +136,6 @@ void Frog::update_drowning(float delta_time){
     if(drowning_timer >= drowning_duration){
         // Stop drowning and start splashing 
         is_drowning = false;
-        splash_effect();
     }
     else{
         jump_progress += delta_time;
@@ -234,6 +233,8 @@ void Frog::draw(){
             }
         }
     }
+
+    if(!is_alive) return;
 
     // Draw the frog
     glPushMatrix();
@@ -414,7 +415,7 @@ void Frog::explosion() {
 
 void Frog::burst_effect(){
     is_bursting = true; 
-    for(int i = 0; i < 100; i++){
+    for(int i = 0; i < 50; i++){
         ofVec3f p_position = position;
         p_position.y += jump_height/2;
         
@@ -434,7 +435,7 @@ void Frog::burst_effect(){
         
         Particle* particle = new Particle(
             p_position,
-            ofVec3f(ofRandom(-0.5, 0.5), ofRandom(-0.5, 0.5), ofRandom(-0.5, 0.5)),
+            ofVec3f(ofRandom(-1.5, 1.5), ofRandom(-1.5, 1.5), ofRandom(-1.5, 1.5)), // Increased base velocity
             p_color,
             ofRandom(2, 5)
         );
@@ -445,16 +446,17 @@ void Frog::burst_effect(){
 void Frog::drown(){
     is_drowning = true;
     drowning_timer = 0;
+    splash_effect();
 }
 
 void Frog::splash_effect(){
     is_splashing = true;
-    for(int i = 0; i < 200; i++){
+    for(int i = 0; i < 50; i++){
         ofVec3f p_position = position;
-        p_position.y -= jump_height/2;
+        p_position.y -= jump_height*4;
         Particle* particle = new Particle(
             p_position,
-            ofVec3f(ofRandom(-0.2, 0.2), ofRandom(0.5, 1), ofRandom(-0.2, 0.2))/3,
+            ofVec3f(ofRandom(-0.3, 0.3), ofRandom(1.5, 3), ofRandom(-0.3, 0.3)),
             ofVec3f(0, 0, ofRandom(0, 1)),
             ofRandom(2, 5)
         );
@@ -468,7 +470,7 @@ void Frog::winning_effect(){
     for(int i = 0; i < 300; i++){
         Particle* particle = new Particle(
             position,
-            ofVec3f(ofRandom(-1, 1), ofRandom(-1, 1), ofRandom(-1, 1)),
+            ofVec3f(ofRandom(-3, 3), ofRandom(-3, 3), ofRandom(-3, 3)), // Increased base velocity
             ofVec3f(ofRandom(0.8, 1), ofRandom(0.8, 1), ofRandom(0, 0.5)),
             ofRandom(2, 5)
         );

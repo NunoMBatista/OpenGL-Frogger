@@ -1,22 +1,54 @@
 #include "particle.h"
+#include "global.h"
 
 Particle::Particle(ofVec3f position, ofVec3f velocity, ofVec3f color, float lifespan){
     this->position = position;
     this->velocity = velocity;
     this->lifespan = lifespan;
     this->color = color;
-
+    this->time_lived = 0;
 }
 
 void Particle::update(float delta_time) {
-    int gravity = -0.5;
-    velocity.y += gravity * delta_time; // Apply gravity over time
-    position += velocity * delta_time * 600; // Scale velocity to units/second
+    GLfloat top_river_row = global.grid->get_grid_position(global.grid->top_river_row, 0).z;
+    GLfloat bottom_river_row = global.grid->get_grid_position(global.grid->bottom_river_row, 0).z;
+    GLfloat left_out_of_bounds = global.grid->get_grid_position(0, -1).x + global.grid->grid_size/2;
+    GLfloat right_out_of_bounds = global.grid->get_grid_position(0, 15).x - global.grid->grid_size/2;
+    GLfloat top_out_of_bounds = global.grid->get_grid_position(global.grid->top_river_row+1, 0).z - global.grid->grid_size/2;
+
+    if(position.y < 0){
+        if(position.z < bottom_river_row){
+            position.y = 0;
+            velocity.y = -velocity.y;
+        }
+        else{
+            if(time_lived > 0.5){
+                lifespan = 0;
+            }
+        }
+    }
+    if(position.x < left_out_of_bounds){
+        position.x = right_out_of_bounds;
+    }
+    else if(position.x > right_out_of_bounds){  
+        position.x = left_out_of_bounds;
+    }
+
+    if(position.z > top_out_of_bounds){
+        position.z = top_out_of_bounds;
+        velocity.z = -velocity.z;
+    }
+
+    int gravity = -2;
+    velocity.y += gravity * delta_time; 
+    position += velocity * delta_time * 200;
     lifespan -= delta_time;
+    time_lived += delta_time;
 
     if(lifespan < 0){
         lifespan = 0;
     }
+
 }
 
 void Particle::draw(){

@@ -4,7 +4,7 @@ class Waterfall;
 //--------------------------------------------------------------
 void ofApp::setup(){
     ofSetVerticalSync(false);
-    //ofSetFrameRate(165);
+    ofSetFrameRate(165);
 }
 
 //--------------------------------------------------------------

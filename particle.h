@@ -11,6 +11,7 @@ class Particle{
         void draw();
         bool is_dead();
 
+        GLfloat time_lived;
         ofVec3f position;
         ofVec3f velocity;
         ofVec3f color;
