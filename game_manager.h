@@ -122,4 +122,8 @@ class Game{
         void draw_game_over();
         void restart_game();
         void draw_stage_cleared();
+
+        int font_size;
+        ofTrueTypeFont font;
+        ofTrueTypeFont font_big;
 };

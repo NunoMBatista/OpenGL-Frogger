@@ -42,6 +42,11 @@ Game::Game() {
     draw_frog = true;
 
     lives = 3;
+
+    // Load the fonts
+    font_size = 20;
+    font.load("RetroFont.ttf", font_size);
+    font_big.load("RetroFont.ttf", font_size * 5);
 }
 
 Game::~Game() {
@@ -209,7 +214,7 @@ void Game::draw() {
 }
 
 void Game::draw_scene(){
-    if(draw_frog && state != GAME_OVER){
+    if(draw_frog && state == PLAYING){
         frog->draw();
     }
     
@@ -424,6 +429,7 @@ void Game::reset_player() {
         state = GAME_OVER;
         return;
     }
+    
     player_position = global.grid->get_grid_position(0, global.grid_columns / 2);
     player_position.y = 0;
     frog = new Frog(player_dimensions, player_position);
@@ -514,15 +520,17 @@ void Game::draw_welcome_screen() {
 
             // Draw title and instructions
             glColor3f(0, 1, 0);
-            ofDrawBitmapString("FROGGER", gw()/2 - 150, gh()/2 - 100);
-            
-            glColor3f(1, 1, 1);
-            ofDrawBitmapString("Controls:", gw()/2 - 40, gh()/2);
-            ofDrawBitmapString("1: Orthographic view", gw()/2 - 60, gh()/2 + 20);
-            ofDrawBitmapString("2: Perspective view", gw()/2 - 60, gh()/2 + 40);
-            ofDrawBitmapString("3: First-Person view", gw()/2 - 60, gh()/2 + 60);
-            ofDrawBitmapString("Use 'WASD' or arrow keys to move", gw()/2 - 100, gh()/2 + 100);
-            ofDrawBitmapString("Press SPACE to start", gw()/2 - 70, gh()/2 + 140);
+            font_big.drawString("FROGGER", gw()/2 - font_big.stringWidth("FROGGER")/2, gh()/2 - 100);
+            glColor3f(0, 1, 1);
+
+            std::string instructions = 
+                "                   Controls:\n\n"
+                "           1: Orthographic view\n"
+                "           2: Perspective view\n"
+                "           3: First-Person view\n"
+                "Use 'WASD' or arrow keys to move\n\n"
+                "           Press SPACE to start";
+            font.drawString(instructions, gw()/2 - font.stringWidth("Use 'WASD' or arrow keys to move")/2, gh()/2);
 
             // Restore matrices
             glMatrixMode(GL_PROJECTION);
@@ -536,21 +544,21 @@ void Game::draw_stage_cleared() {
     // Save current matrices
     glMatrixMode(GL_PROJECTION);
     glPushMatrix();
-    glLoadIdentity();
-    glOrtho(0, gw(), gh(), 0, -1, 1);
-    glMatrixMode(GL_MODELVIEW);
-    glPushMatrix();
-    glLoadIdentity();
+        glLoadIdentity();
+        glOrtho(0, gw(), gh(), 0, -1, 1);
+        glMatrixMode(GL_MODELVIEW);
+        glPushMatrix();
+            glLoadIdentity();
 
-    // Draw stage cleared message
-    glColor3f(0, 1, 0);
-    ofDrawBitmapString("STAGE " + ofToString(cur_stage) + " CLEARED!", gw()/2 - 70, gh()/2);
-    ofDrawBitmapString("Press SPACE to continue", gw()/2 - 80, gh()/2 + 20);
+            // Draw stage cleared message
+            glColor3f(0, 1, 0);
+            ofDrawBitmapString("STAGE " + ofToString(cur_stage) + " CLEARED!", gw()/2 - 70, gh()/2);
+            ofDrawBitmapString("Press SPACE to continue", gw()/2 - 80, gh()/2 + 20);
 
-    // Restore matrices
-    glMatrixMode(GL_PROJECTION);
-    glPopMatrix();
-    glMatrixMode(GL_MODELVIEW);
+            // Restore matrices
+            glMatrixMode(GL_PROJECTION);
+        glPopMatrix();
+        glMatrixMode(GL_MODELVIEW);
     glPopMatrix();
 }
 
