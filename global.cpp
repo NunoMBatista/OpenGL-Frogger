@@ -10,8 +10,8 @@ Global::Global() {
 
     grid = new Grid(grid_rows, grid_columns, grid_size);
 
-    left_out_of_bounds = grid->get_grid_position(0, -2).x;
-    right_out_of_bounds = grid->get_grid_position(1, grid_columns+2).x;
+    left_out_of_bounds = grid->get_grid_position(0, -3).x;
+    right_out_of_bounds = grid->get_grid_position(1, grid_columns+3).x;
 
     base_element_speed = 50.0f;
     platform_offset_y = 10.0f;

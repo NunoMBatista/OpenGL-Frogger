@@ -2,7 +2,6 @@
 
 #include "ofMain.h"
 #include "game_manager.h"
-#include "waterfall.h"
 
 class ofApp : public ofBaseApp{
 	public:

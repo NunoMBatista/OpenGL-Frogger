@@ -15,31 +15,11 @@ Grid::Grid(int rows, int columns, float size) {
     top_road_row = 6;
     bottom_road_row = 1;
 
-    // Add waterfalls at the edges of the river
-    waterfalls.push_back(new Waterfall(
-        get_grid_position(bottom_river_row+2, -1),
-        top_river_row,
-        bottom_river_row
-    ));
-    waterfalls.push_back(new Waterfall(
-        get_grid_position(bottom_river_row+2, grid_columns),
-        top_river_row,
-        bottom_river_row
-    ));
+
 }
 
-void Grid::update(){
-    for (auto waterfall : waterfalls) {
-        waterfall->update();
-    }
-}
 
 void Grid::draw(){
-    // Draw waterfalls
-    for (auto waterfall : waterfalls) {
-        waterfall->draw();
-    }
-
     glPushMatrix();
         glTranslatef(0, -grid_size/2, 0);
         for(int i = 0; i < grid_rows; i++){
@@ -92,10 +72,17 @@ void Grid::draw(){
                     
                     glScalef(grid_size, grid_size, grid_size);
                     if(i < bottom_river_row-1 && i > 0){
-                        cube_unit(0, 0, 0);
-                    }
+                        glPushMatrix();
+                            glTranslatef(0, -1, 0);
+                            cube_unit(0, 0, 0);
+                        glPopMatrix();
+                    }  
+
                     else if(i >= bottom_river_row && i <= top_river_row){
-                        cube_unit(0, 0, 0.5);
+                        glPushMatrix();
+                            glTranslatef(0, -1, 0);
+                            cube_unit(0, 0, 0.5);
+                        glPopMatrix();
                     }
                     else if(i >= top_river_row){
                         cube_unit(0, 0.6, 0);
@@ -118,6 +105,26 @@ void Grid::draw(){
                         glTranslatef(position.x, position.y + grid_size, position.z);
                         glScalef(grid_size, grid_size, grid_size);
                         cube_unit(0.3, 0.3, 0.3);
+                    glPopMatrix();
+                }
+
+                // Draw the tunnel entrances one block off
+                if((i <= top_road_row) && (i >= bottom_road_row) && (j < -1 || j > grid_columns)){
+                    ofVec3f position = get_grid_position(i, j);
+                    glPushMatrix();
+                        glTranslatef(position.x, position.y, position.z);
+                        glScalef(grid_size, grid_size, grid_size);
+                        cube_unit(0, 0, 0);
+                    glPopMatrix();
+                }
+
+                // Draw the waterfall entrances one block off
+                if((i <= top_river_row) && (i >= bottom_river_row) && (j < -1 || j > grid_columns)){
+                    ofVec3f position = get_grid_position(i, j);
+                    glPushMatrix();
+                        glTranslatef(position.x, position.y, position.z);
+                        glScalef(grid_size, grid_size, grid_size);
+                        cube_unit(0, 0, 0.5);
                     glPopMatrix();
                 }
             }

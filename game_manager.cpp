@@ -58,9 +58,7 @@ Game::~Game() {
         delete dead_frog;
     }
 
-    for (auto waterfall : global.grid->waterfalls) {
-        delete waterfall;
-    }
+
 }
 
 void Game::apply_camera() { 
@@ -71,19 +69,20 @@ void Game::apply_camera() {
 void Game::update() {
     float delta_time = ofGetLastFrameTime();
 
-    global.grid->update();
-
     player_position = frog->position;
     frog->update(delta_time);
     cam->update(delta_time, player_position);
 
-    for(auto dead_frog: dead_frogs){
+    for(auto it = dead_frogs.begin(); it != dead_frogs.end();){
+        Frog *dead_frog = *it;
         if(dead_frog->is_alive){
             dead_frog->update(delta_time);
+            ++it;
         }
         else{
             // Remove the frog from the dead_frogs vector
-            //dead_frogs.erase(std::find(dead_frogs.begin(), dead_frogs.end(), dead_frog), dead_frogs.end());
+            delete dead_frog;
+            it = dead_frogs.erase(it);
         }
     }
 
@@ -374,6 +373,8 @@ bool Game::check_collision(ofVec3f &pos1, ofVec3f &dim1, ofVec3f &pos2, ofVec3f 
 }
 
 void Game::reset_player() {
+    delete frog;
+
     player_position = global.grid->get_grid_position(0, global.grid_columns / 2);
     frog = new Frog(player_dimensions, player_position);
     player_row = 0;

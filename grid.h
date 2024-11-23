@@ -11,7 +11,6 @@ class Grid {
     public:
         Grid(int rows, int columns, float size);
 
-        void update();
         void draw();
         ofVec3f get_grid_position(int row, int column);
         ofVec2f get_grid_row_column(ofVec3f position);
