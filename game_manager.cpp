@@ -509,8 +509,9 @@ void Game::draw_game_over() {
 
             // Draw game over text
             glColor3f(1, 0, 0);
-            ofDrawBitmapString("GAME OVER", gw()/2 - 40, gh()/2);
-            ofDrawBitmapString("Press SPACE to restart", gw()/2 - 70, gh()/2 + 20);
+            font_big.drawString("GAME OVER", gw()/2 - font_big.stringWidth("GAME OVER")/2, gh()/2 - 100);
+            font.drawString("You ran out of lives", gw()/2 - font.stringWidth("You ran out of lives")/2, gh()/2);
+            font.drawString("Press SPACE to restart", gw()/2 - font.stringWidth("Press SPACE to restart")/2, gh()/2 + 20);
 
             // Restore matrices
             glMatrixMode(GL_PROJECTION);
