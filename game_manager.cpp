@@ -47,6 +47,7 @@ Game::Game() {
     font_size = 20;
     font.load("RetroFont.ttf", font_size);
     font_big.load("RetroFont.ttf", font_size * 5);
+    font_small.load("RetroFont.ttf", font_size * 0.5);
 }
 
 Game::~Game() {
@@ -153,7 +154,7 @@ void Game::update() {
 
     ofVec3f cur_plat_velocity = ofVec3f(0, 0, 0);
     for(auto platform: platforms){
-        ofVec3f acceptable_dimensions = frog->dimensions * 0.5;
+        ofVec3f acceptable_dimensions = frog->dimensions * 0.5; // The frog can be on the edge of the platform
         if(check_collision(frog->position, acceptable_dimensions, platform->position, platform->dimensions)){
             on_plat = true;
             cur_plat_velocity = platform->velocity;
@@ -166,7 +167,6 @@ void Game::update() {
         frog->position += cur_plat_velocity * delta_time;
         player_position = frog->position;
         player_position.y += global.platform_offset_y;
-
     }
     // Check if the frog is in the river
     if((player_row >= global.grid->bottom_river_row) && (player_row <= global.grid->top_river_row)){
@@ -203,6 +203,9 @@ void Game::draw() {
         case PLAYING:
             draw_hud();
             break;
+        case FINISHED:
+            draw_win_screen();
+            return;
     }
 
     // Draw mini-map in first person mode
@@ -337,7 +340,6 @@ void Game::try_move(int new_row, int new_column) {
 
         //player_position = new_position;
         frog->position = player_position;
-
     }
 }
 
@@ -358,6 +360,9 @@ void Game::key_pressed(int key) {
             }
             return;
         case GAME_OVER:
+            if (key == ' ') restart_game();
+            return;
+        case FINISHED:
             if (key == ' ') restart_game();
             return;
         case PLAYING:
@@ -459,6 +464,28 @@ void Game::restart_game() {
     frog->start_scale_animation();
 }
 
+void Game::draw_win_screen(){
+    // Save current matrices
+    glMatrixMode(GL_PROJECTION);
+    glPushMatrix();
+        glLoadIdentity();
+        glOrtho(0, gw(), gh(), 0, -1, 1);
+        glMatrixMode(GL_MODELVIEW);
+        glPushMatrix();
+            glLoadIdentity();
+
+            // Draw win screen
+            glColor3f(0, 1, 0);
+            font_big.drawString("YOU WIN!", gw()/2 - font_big.stringWidth("YOU WIN!")/2, gh()/2 - 100);
+            font.drawString("<Press SPACE to restart>", gw()/2 - font.stringWidth("Press SPACE to restart")/2, gh()/2 + 20);
+
+            // Restore matrices
+            glMatrixMode(GL_PROJECTION);
+        glPopMatrix();
+        glMatrixMode(GL_MODELVIEW);
+    glPopMatrix();
+}
+
 void Game::draw_hud() {
     // Save current matrices
     glMatrixMode(GL_PROJECTION);
@@ -473,11 +500,14 @@ void Game::draw_hud() {
         glPushMatrix();
             glLoadIdentity();
 
-            // Draw lives
             glColor3f(0, 1, 0);
+
+            font_small.drawString("Lives:", 30, 30);
+
+            // Draw lives
             for (int i = 0; i < lives; i++) {
                 glPushMatrix();
-                    glTranslatef(30 + i * 40, 30, 0);
+                    glTranslatef(font_small.stringWidth("Lives:      ") + 30 + i * 40, 26, 0);
                     glScalef(20, 20, 1);
                     rectFill_unit();
                 glPopMatrix();
@@ -485,7 +515,7 @@ void Game::draw_hud() {
 
             // Draw stage number
             string stage_text = "Stage: " + ofToString(cur_stage);
-            ofDrawBitmapString(stage_text, 30, 60); 
+            font_small.drawString(stage_text, 30, 60);
 
             // Restore matrices
             glMatrixMode(GL_PROJECTION);
@@ -510,8 +540,7 @@ void Game::draw_game_over() {
             // Draw game over text
             glColor3f(1, 0, 0);
             font_big.drawString("GAME OVER", gw()/2 - font_big.stringWidth("GAME OVER")/2, gh()/2 - 100);
-            font.drawString("You ran out of lives", gw()/2 - font.stringWidth("You ran out of lives")/2, gh()/2);
-            font.drawString("Press SPACE to restart", gw()/2 - font.stringWidth("Press SPACE to restart")/2, gh()/2 + 20);
+            font.drawString("<Press SPACE to restart>", gw()/2 - font.stringWidth("Press SPACE to restart")/2, gh()/2 + 20);
 
             // Restore matrices
             glMatrixMode(GL_PROJECTION);
@@ -543,7 +572,7 @@ void Game::draw_welcome_screen() {
                 "             2: Perspective view\n"
                 "             3: First-Person view\n"
                 "Use 'WASD' or the arrow keys to move\n\n"
-                "           Press SPACE to start";
+                "           <Press SPACE to start>";
             font.drawString(instructions, gw()/2 - font.stringWidth("Use 'WASD' or arrow keys to move")/2, gh()/2);
 
             // Restore matrices
@@ -565,9 +594,10 @@ void Game::draw_stage_cleared() {
             glLoadIdentity();
 
             // Draw stage cleared message
-            glColor3f(0, 1, 0);
-            ofDrawBitmapString("STAGE " + ofToString(cur_stage) + " CLEARED!", gw()/2 - 70, gh()/2);
-            ofDrawBitmapString("Press SPACE to continue", gw()/2 - 80, gh()/2 + 20);
+            glColor3f(1, 1, 0);
+            font_big.drawString("STAGE CLEARED!", gw()/2 - font_big.stringWidth("STAGE CLEARED!")/2, gh()/2 - 100);
+            font.drawString("<Press SPACE to continue>", gw()/2 - font.stringWidth("Press SPACE to continue")/2, gh()/2 + 20);
+            
 
             // Restore matrices
             glMatrixMode(GL_PROJECTION);
@@ -584,6 +614,12 @@ void Game::course_setup(int stage){
             break;
         case 2:
             stage_2(cars, platforms);
+            break;
+        case 3:
+            stage_3(cars, platforms);
+            break;
+        case 4: 
+            state = FINISHED;
             break;
     }
 

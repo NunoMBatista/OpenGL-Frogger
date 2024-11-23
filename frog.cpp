@@ -475,7 +475,7 @@ void Frog::winning_effect(){
             position,
             ofVec3f(ofRandom(-1, 1), ofRandom(-1, 1), ofRandom(-1, 1)),
             ofVec3f(ofRandom(0.8, 1), ofRandom(0.8, 1), ofRandom(0, 0.5)),
-            ofRandom(0.5, 1)
+            ofRandom(2, 5)
         );
         particles.push_back(particle);
     }

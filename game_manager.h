@@ -17,7 +17,8 @@ enum GameState {
     WELCOME_SCREEN,
     PLAYING,
     STAGE_CLEARED,
-    GAME_OVER
+    GAME_OVER,
+    FINISHED
 };
 
 class Game{
@@ -108,6 +109,7 @@ class Game{
         GameState state;
 
         void draw_welcome_screen();
+        void draw_win_screen();
 
         void try_move(int new_row, int new_column); // Try to move the player to a new grid cell (check if it's valid)
         const float ROTATION_SPEED = 90.0f; // Degrees per key press
@@ -126,4 +128,5 @@ class Game{
         int font_size;
         ofTrueTypeFont font;
         ofTrueTypeFont font_big;
+        ofTrueTypeFont font_small;
 };
