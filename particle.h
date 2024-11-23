@@ -7,7 +7,7 @@
 class Particle{
     public:
         Particle(ofVec3f position, ofVec3f velocity, ofVec3f color, float lifespan);
-        void update();
+        void update(float delta_time);
         void draw();
         bool is_dead();
 

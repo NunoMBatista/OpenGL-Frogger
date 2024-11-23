@@ -342,6 +342,10 @@ void Game::try_move(int new_row, int new_column) {
 }
 
 void Game::key_pressed(int key) {
+    if(key == 'f' || key == 'F'){
+        ofToggleFullscreen();
+    }
+
     switch(state) {
         case WELCOME_SCREEN:
             if (key == ' ') {
@@ -570,6 +574,7 @@ void Game::draw_welcome_screen() {
                 "             2: Perspective view\n"
                 "             3: First-Person view\n"
                 "Use 'WASD' or the arrow keys to move\n\n"
+                "             F: Toggle fullscreen\n\n"
                 "           <Press SPACE to start>";
             font.drawString(instructions, gw()/2 - font.stringWidth("Use 'WASD' or arrow keys to move")/2, gh()/2);
 

@@ -2,14 +2,17 @@
 
 Particle::Particle(ofVec3f position, ofVec3f velocity, ofVec3f color, float lifespan){
     this->position = position;
-    this->velocity = velocity*10;
+    this->velocity = velocity;
     this->lifespan = lifespan;
     this->color = color;
+
 }
 
-void Particle::update(){
-    position += velocity;
-    lifespan -= 0.01f;
+void Particle::update(float delta_time) {
+    int gravity = -0.5;
+    velocity.y += gravity * delta_time; // Apply gravity over time
+    position += velocity * delta_time * 600; // Scale velocity to units/second
+    lifespan -= delta_time;
 
     if(lifespan < 0){
         lifespan = 0;
