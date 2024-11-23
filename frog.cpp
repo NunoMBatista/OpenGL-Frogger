@@ -66,6 +66,12 @@ Frog::Frog(ofVec3f dimensions, ofVec3f position)
 
     on_plat = false;
     plat_velocity = ofVec3f(0, 0, 0); 
+
+    is_scaling = false;
+    scale_progress = 0.0f;
+    scale_duration = 0.3f;
+
+    this->direction = UP;
 }
 
 // Destructor
@@ -114,6 +120,15 @@ void Frog::update(float delta_time) {
 
     // Rotation animation
     if (is_rotating) update_rotation(delta_time);
+
+    // Update scaling animation
+    if(is_scaling) {
+        scale_progress += delta_time;
+        if(scale_progress >= scale_duration) {
+            scale_progress = scale_duration;
+            is_scaling = false;
+        }
+    }
 }
 
 void Frog::update_drowning(float delta_time){
@@ -228,6 +243,12 @@ void Frog::draw(){
     // Draw the frog
     glPushMatrix();
         glTranslatef(position.x, position.y - leg_h*3, position.z);
+
+        // Apply scaling animation
+        if(is_scaling) {
+            float scale_factor = scale_progress / scale_duration;
+            glScalef(scale_factor, scale_factor, scale_factor);
+        }
 
         // Apply vertical offset for jump
         float y_offset = 0.0f;
@@ -458,4 +479,9 @@ void Frog::winning_effect(){
         );
         particles.push_back(particle);
     }
+}
+
+void Frog::start_scale_animation() {
+    is_scaling = true;
+    scale_progress = 0.0f;
 }

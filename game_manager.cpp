@@ -209,6 +209,7 @@ void Game::draw() {
     if (camera_mode == FIRST_PERSON) {
         glViewport(gw()*0.5, gh()*0.5, gw()*0.5, gh()*0.5);
         cam->apply_ortho_top_down(player_position);
+        draw_frog = true;
         draw_scene();
     }
 }
@@ -343,20 +344,24 @@ void Game::try_move(int new_row, int new_column) {
 void Game::key_pressed(int key) {
     switch(state) {
         case WELCOME_SCREEN:
-            if (key == ' ') state = PLAYING;
+            if (key == ' ') {
+                state = PLAYING;
+                frog->start_scale_animation();
+            }
             return;
         case STAGE_CLEARED:
             if (key == ' ') {
                 state = PLAYING;
                 course_setup(++cur_stage);
                 lives++;
+                frog->start_scale_animation();
             }
             return;
         case GAME_OVER:
             if (key == ' ') restart_game();
             return;
         case PLAYING:
-            if (frog->is_moving || frog->is_exploding) return;
+            if (frog->is_moving || frog->is_exploding || frog->is_scaling) return;
             switch(key) {
                 case '1': 
                     camera_mode = ORTHO_TOP_DOWN; 
@@ -430,9 +435,16 @@ void Game::reset_player() {
         return;
     }
     
+
     player_position = global.grid->get_grid_position(0, global.grid_columns / 2);
     player_position.y = 0;
     frog = new Frog(player_dimensions, player_position);
+    frog->start_scale_animation();
+    frog->direction = UP;
+
+    if(camera_mode == FIRST_PERSON){
+        frog->eye_vector = direction_to_vector(frog->direction);
+    }
     player_row = 0;
     player_column = global.grid_columns / 2;
 }
@@ -444,6 +456,7 @@ void Game::restart_game() {
     cur_stage = 1;
     course_setup(cur_stage);
     reset_player();
+    frog->start_scale_animation();
 }
 
 void Game::draw_hud() {
@@ -524,11 +537,11 @@ void Game::draw_welcome_screen() {
             glColor3f(0, 1, 1);
 
             std::string instructions = 
-                "                   Controls:\n\n"
-                "           1: Orthographic view\n"
-                "           2: Perspective view\n"
-                "           3: First-Person view\n"
-                "Use 'WASD' or arrow keys to move\n\n"
+                "                     Controls:\n\n"
+                "             1: Orthographic view\n"
+                "             2: Perspective view\n"
+                "             3: First-Person view\n"
+                "Use 'WASD' or the arrow keys to move\n\n"
                 "           Press SPACE to start";
             font.drawString(instructions, gw()/2 - font.stringWidth("Use 'WASD' or arrow keys to move")/2, gh()/2);
 

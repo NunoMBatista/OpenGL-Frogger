@@ -30,6 +30,11 @@ class Frog {
 
         void winning_effect();
 
+        void start_scale_animation();
+        bool is_scaling;
+        float scale_progress;
+        float scale_duration;
+
         // Public variables
         ofVec3f eye_vector;        
         Direction direction;
