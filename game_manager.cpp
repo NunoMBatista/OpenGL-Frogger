@@ -65,8 +65,6 @@ Game::~Game() {
     for(auto dead_frog: dead_frogs){
         delete dead_frog;
     }
-
-
 }
 
 void Game::apply_camera() { 
