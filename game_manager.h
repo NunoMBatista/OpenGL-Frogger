@@ -13,6 +13,13 @@ class Camera;
 class Car;
 class Platform;
 
+enum GameState {
+    WELCOME_SCREEN,
+    PLAYING,
+    STAGE_CLEARED,
+    GAME_OVER
+};
+
 class Game{
     public: 
         Game();
@@ -98,6 +105,9 @@ class Game{
         ******** End of first person camera definitions ******* 
         */
 
+        GameState state;
+
+        void draw_welcome_screen();
 
         void try_move(int new_row, int new_column); // Try to move the player to a new grid cell (check if it's valid)
         const float ROTATION_SPEED = 90.0f; // Degrees per key press
@@ -106,4 +116,10 @@ class Game{
         std::vector<Platform*> platforms; // List of platforms
         std::bitset<20> filled_slots;
         int cur_stage;
+
+        int lives;
+        void draw_hud();
+        void draw_game_over();
+        void restart_game();
+        void draw_stage_cleared();
 };
