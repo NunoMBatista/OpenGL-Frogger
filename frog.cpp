@@ -86,9 +86,20 @@ void Frog::update(float delta_time) {
     // Update the particles
     if(is_bursting || is_splashing){
         // Remove lifespan 0
-        particles.erase(std::remove_if(particles.begin(), particles.end(), [](Particle* particle){
-            return particle->lifespan <= 0;
-        }), particles.end());
+        // particles.erase(std::remove_if(particles.begin(), particles.end(), [](Particle* particle){
+        //     return particle->lifespan <= 0;
+        // }), particles.end());
+
+        // Iterate throgh the particles and remove the ones with lifespan 0
+        for(auto it = particles.begin(); it != particles.end();){
+            if((*it)->lifespan <= 0){
+                delete *it;
+                it = particles.erase(it);
+            }
+            else{
+                it++;
+            }
+        }
 
         for(auto particle : particles){
             particle->update();

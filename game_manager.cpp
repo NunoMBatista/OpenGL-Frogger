@@ -10,8 +10,8 @@
 #include "ofUtils.h"  
 
 Game::Game() {
+    glEnable(GL_DEPTH_TEST);
     state = WELCOME_SCREEN;
-    glEnable(GL_DEPTH_TEST); // Make it possible to see the depth of the objects
     ofSetBackgroundColor(0, 0, 0); // Set the background color to black
 
     cam = new Camera(60.0f, global.grid->get_grid_position(global.grid_rows / 2, global.grid_columns / 2)); 
@@ -42,7 +42,6 @@ Game::Game() {
     draw_frog = true;
 
     lives = 3;
-    state = WELCOME_SCREEN;
 }
 
 Game::~Game() {
@@ -70,22 +69,16 @@ void Game::apply_camera() {
 
 // Update the game state
 void Game::update() {
-    if (state != PLAYING) return;
+    if (state != PLAYING) {
+        frog->position = global.grid->get_grid_position(0, global.grid_columns / 2);
+        frog->position.y = 0;
+    }
+
     float delta_time = ofGetLastFrameTime();
 
     player_position = frog->position;
     frog->update(delta_time);
     cam->update(delta_time, player_position);
-
-    // for(auto dead_frog: dead_frogs){
-    //     if(dead_frog->is_alive){
-    //         dead_frog->update(delta_time);
-    //     }
-    //     else{
-    //         // Remove the frog from the dead_frogs vector
-    //         //dead_frogs.erase(std::find(dead_frogs.begin(), dead_frogs.end(), dead_frog), dead_frogs.end());
-    //     }
-    // }
 
     for(auto it = dead_frogs.begin(); it != dead_frogs.end();){
         if((*it)->is_alive){
@@ -141,6 +134,7 @@ void Game::update() {
         finished_frog->rotation = 180;
         finished_frog->winning_effect();
         finished_frogs.push_back(finished_frog);
+
         // Add a new life to compensate for the reset_player call
         lives++;
         // Reset the player frog
@@ -185,27 +179,32 @@ void Game::update() {
 
 // Draw the main game scene
 void Game::draw() {
+    // Always draw the game scene first
+    draw_frog = camera_mode == FIRST_PERSON ? false : true;
+    apply_camera();
+    draw_scene();
+
+    // Draw HUD and overlays based on state
     switch(state) {
         case WELCOME_SCREEN:
             draw_welcome_screen();
-            return;
+            break;
         case STAGE_CLEARED:
             draw_stage_cleared();
-            return;
+            break;
         case GAME_OVER:
             draw_game_over();
-            return;
-        case PLAYING:
-            draw_frog = camera_mode == FIRST_PERSON ? false : true;
-            apply_camera();
-            draw_scene();
-            draw_hud();
-            if (camera_mode == FIRST_PERSON) {
-                glViewport(gw()*0.5, gh()*0.5, gw()*0.5, gh()*0.5);
-                cam->apply_ortho_top_down(player_position);
-                draw_scene();
-            }
             break;
+        case PLAYING:
+            draw_hud();
+            break;
+    }
+
+    // Draw mini-map in first person mode
+    if (camera_mode == FIRST_PERSON) {
+        glViewport(gw()*0.5, gh()*0.5, gw()*0.5, gh()*0.5);
+        cam->apply_ortho_top_down(player_position);
+        draw_scene();
     }
 }
 
@@ -417,17 +416,23 @@ bool Game::check_collision(ofVec3f &pos1, ofVec3f &dim1, ofVec3f &pos2, ofVec3f 
 void Game::reset_player() {
     lives--;
     if (lives <= 0) {
+        frog->is_alive = false;
+        frog->is_splashing = false;
+        frog->is_exploding = false;
+        frog->is_drowning = false;
+        frog->is_winning = false;
         state = GAME_OVER;
         return;
     }
     player_position = global.grid->get_grid_position(0, global.grid_columns / 2);
+    player_position.y = 0;
     frog = new Frog(player_dimensions, player_position);
     player_row = 0;
     player_column = global.grid_columns / 2;
 }
 
 void Game::restart_game() {
-    state = WELCOME_SCREEN;
+    state = PLAYING;
     lives = 4;
     finished_frogs_count = 0;
     cur_stage = 1;
@@ -438,9 +443,11 @@ void Game::restart_game() {
 void Game::draw_hud() {
     // Save current matrices
     glMatrixMode(GL_PROJECTION);
-    glLoadIdentity();
     
     glPushMatrix();
+    
+        glLoadIdentity();
+    
         glOrtho(0, gw(), gh(), 0, -1, 1);
         glMatrixMode(GL_MODELVIEW);
     
@@ -451,19 +458,20 @@ void Game::draw_hud() {
             glColor3f(0, 1, 0);
             for (int i = 0; i < lives; i++) {
                 glPushMatrix();
-                glTranslatef(30 + i * 40, 30, 0);
-                glScalef(20, 20, 1);
-                rectFill_unit();
+                    glTranslatef(30 + i * 40, 30, 0);
+                    glScalef(20, 20, 1);
+                    rectFill_unit();
                 glPopMatrix();
             }
 
             // Draw stage number
             string stage_text = "Stage: " + ofToString(cur_stage);
-            ofDrawBitmapString(stage_text, 30, 60);  // Changed position to be more visible
+            ofDrawBitmapString(stage_text, 30, 60); 
 
             // Restore matrices
             glMatrixMode(GL_PROJECTION);
         glPopMatrix();
+    
         glMatrixMode(GL_MODELVIEW);
     glPopMatrix();
 }
@@ -497,28 +505,30 @@ void Game::draw_welcome_screen() {
     // Save current matrices
     glMatrixMode(GL_PROJECTION);
     glPushMatrix();
-    glLoadIdentity();
-    glOrtho(0, gw(), gh(), 0, -1, 1);
-    glMatrixMode(GL_MODELVIEW);
-    glPushMatrix();
-    glLoadIdentity();
-
-    // Draw title and instructions
-    glColor3f(0, 1, 0);
-    ofDrawBitmapString("FROGGER", gw()/2 - 150, gh()/2 - 100);
+        glLoadIdentity();
+        glOrtho(0, gw(), gh(), 0, -1, 1);
     
-    glColor3f(1, 1, 1);
-    ofDrawBitmapString("Controls:", gw()/2 - 40, gh()/2);
-    ofDrawBitmapString("1: Orthographic view", gw()/2 - 60, gh()/2 + 20);
-    ofDrawBitmapString("2: Perspective view", gw()/2 - 60, gh()/2 + 40);
-    ofDrawBitmapString("3: First-Person view", gw()/2 - 60, gh()/2 + 60);
-    ofDrawBitmapString("Use 'WASD' or arrow keys to move", gw()/2 - 100, gh()/2 + 100);
-    ofDrawBitmapString("Press SPACE to start", gw()/2 - 70, gh()/2 + 140);
+        glMatrixMode(GL_MODELVIEW);
+        glPushMatrix();
+            glLoadIdentity();
 
-    // Restore matrices
-    glMatrixMode(GL_PROJECTION);
-    glPopMatrix();
-    glMatrixMode(GL_MODELVIEW);
+            // Draw title and instructions
+            glColor3f(0, 1, 0);
+            ofDrawBitmapString("FROGGER", gw()/2 - 150, gh()/2 - 100);
+            
+            glColor3f(1, 1, 1);
+            ofDrawBitmapString("Controls:", gw()/2 - 40, gh()/2);
+            ofDrawBitmapString("1: Orthographic view", gw()/2 - 60, gh()/2 + 20);
+            ofDrawBitmapString("2: Perspective view", gw()/2 - 60, gh()/2 + 40);
+            ofDrawBitmapString("3: First-Person view", gw()/2 - 60, gh()/2 + 60);
+            ofDrawBitmapString("Use 'WASD' or arrow keys to move", gw()/2 - 100, gh()/2 + 100);
+            ofDrawBitmapString("Press SPACE to start", gw()/2 - 70, gh()/2 + 140);
+
+            // Restore matrices
+            glMatrixMode(GL_PROJECTION);
+        glPopMatrix();
+    
+        glMatrixMode(GL_MODELVIEW);
     glPopMatrix();
 }
 
