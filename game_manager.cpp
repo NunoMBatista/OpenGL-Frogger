@@ -562,7 +562,7 @@ void Game::draw_welcome_screen() {
             // Draw title and instructions
             glColor3f(0, 1, 0);
             font_big.drawString("FROGGER", gw()/2 - font_big.stringWidth("FROGGER")/2, gh()/2 - 100);
-            glColor3f(0, 1, 1);
+            glColor3f(1, 1, 1);
 
             std::string instructions = 
                 "                     Controls:\n\n"
