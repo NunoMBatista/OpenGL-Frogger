@@ -1,6 +1,7 @@
 #include "camera.h"
-#include "cg_cam_extras.h"
-#include "frog.h"
+#include "../utils/cg_cam_extras.h"
+#include "../game/frog.h"
+
 
 Camera::Camera(float fov, ofVec3f ortho_c) {
     theta_fov = fov;
@@ -10,6 +11,7 @@ Camera::Camera(float fov, ofVec3f ortho_c) {
     cam_dist = (gh()/2)/tan((theta_fov/2)*(PI/180));
 }
 
+
 void Camera::setup(ofVec3f player_pos, int grid_columns) {
     current_cam_position = ofVec3f(0, cam_dist, 0);
     current_cam_look = ofVec3f(0, 0, 0);
@@ -18,21 +20,33 @@ void Camera::setup(ofVec3f player_pos, int grid_columns) {
     is_camera_transitioning = false;
 }
 
+
 void Camera::update(float delta_time, const ofVec3f& player_pos) {
     // Camera animation
     if (is_camera_transitioning) {
         float step = camera_transition_speed * delta_time;
-        // Interpolate camera position and look-at point with a smooth step
+
+        /*
+            Interpolate camera position and look-at point with a smooth step
+
+            current_cam_position = current_cam_position + (target_cam_position - current_cam_position) * step;
+            current_cam_look = current_cam_look + (target_cam_look - current_cam_look) * step;
+        */
         current_cam_position = current_cam_position.getInterpolated(target_cam_position, step);
         current_cam_look = current_cam_look.getInterpolated(target_cam_look, step);
 
         // Check if the camera has reached the target position
         if (current_cam_position.distance(target_cam_position) < 0.1f &&
             current_cam_look.distance(target_cam_look) < 0.1f) {
+            
+            current_cam_position = target_cam_position;
+            current_cam_look = target_cam_look;
+
             is_camera_transitioning = false;
         }
     }
 }
+
 
 void Camera::apply(CameraMode mode, const ofVec3f& player_pos, const Frog* frog) {
     glMatrixMode(GL_PROJECTION);
@@ -51,11 +65,12 @@ void Camera::apply(CameraMode mode, const ofVec3f& player_pos, const Frog* frog)
     }
 }
 
+
 void Camera::apply_ortho_top_down(const ofVec3f& player_pos) {
     glOrtho(gw()/2, -gw()/2, -gh()/2, gh()/2, 10, 1000);
-    
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
+
     lookat(
         ortho_center.x,   cam_dist,     ortho_center.z, 
         ortho_center.x,          0,     ortho_center.z,
@@ -63,6 +78,7 @@ void Camera::apply_ortho_top_down(const ofVec3f& player_pos) {
     );
 
 }
+
 
 void Camera::apply_perspective_player(const ofVec3f& player_pos) {
     perspective(theta_fov, 100, 1000);
@@ -80,6 +96,7 @@ void Camera::apply_perspective_player(const ofVec3f& player_pos) {
                              0,                                1,                          0
     );
 }
+
 
 void Camera::apply_first_person(const ofVec3f& player_pos, const Frog* frog) {
     perspective(theta_fov*1.5, 100.0f, 1000.0f);

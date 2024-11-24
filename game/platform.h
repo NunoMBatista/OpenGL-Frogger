@@ -1,14 +1,13 @@
 #pragma once 
 
 #include "ofMain.h"
-#include "cg_extras.h"
-#include "cg_drawing_extras.h"
+#include "../utils/cg_extras.h"
+#include "../utils/cg_drawing_extras.h"
 
 /*
     Platform types:
     1 - Log
     2 - Turtle
-    
 */
 class Platform{
     public: 

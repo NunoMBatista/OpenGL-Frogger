@@ -1,6 +1,6 @@
 #include <vector>
 #include "game_manager.h"
-#include "cg_cam_extras.h"
+#include "../utils/cg_cam_extras.h"
 #include "frog.h"
 #include "car.h"
 #include "platform.h"
@@ -9,20 +9,21 @@
 #include "ofImage.h"
 #include "ofUtils.h"  
 
+
 Game::Game() {
     glEnable(GL_DEPTH_TEST);
+    ofSetBackgroundColor(0, 0, 0);
+
+    // Initialize the game state
     state = WELCOME_SCREEN;
-    ofSetBackgroundColor(0, 0, 0); // Set the background color to black
+    cur_stage = 1;
+    course_setup(cur_stage);
+    finished_frogs_count = 0;
+    lives = 3;
 
-    cam = new Camera(60.0f, global.grid->get_grid_position(global.grid_rows / 2, global.grid_columns / 2)); 
-    camera_mode = PERSPECTIVE_PLAYER; // Default camera mode
-
-    // Player position
+    // Create the player 
     player_position = global.grid->get_grid_position(0, global.grid_columns / 2); // Start at middle of first row
-    player_dimensions = ofVec3f(40, 80, 45);
-    player_dimensions *= 0.7;
-
-    // Create the frog
+    player_dimensions = ofVec3f(40, 80, 45) * 0.7;
     frog = new Frog(player_dimensions, player_position);
 
     // Initialize player grid position
@@ -32,16 +33,13 @@ Game::Game() {
     target_position = player_position;
 
     // Setup the camera
+    cam = new Camera(
+            60, // Default FOV
+            global.grid->get_grid_position(global.grid_rows / 2, global.grid_columns / 2) // The ortho center is the center of the grid
+        );
+    camera_mode = PERSPECTIVE_PLAYER; // Default camera mode
     cam->setup(player_position, global.grid_columns);
-
-    // Setup the course
-    cur_stage = 1;
-    course_setup(cur_stage);
-    finished_frogs_count = 0;
-
     draw_frog = true;
-
-    lives = 3;
 
     // Load the fonts
     font_size = 20;
@@ -49,6 +47,7 @@ Game::Game() {
     font_big.load("RetroFont.ttf", font_size * 5);
     font_small.load("RetroFont.ttf", font_size * 0.5);
 }
+
 
 Game::~Game() {
     delete cam;
@@ -67,9 +66,11 @@ Game::~Game() {
     }
 }
 
+
 void Game::apply_camera() { 
     cam->apply(camera_mode, player_position, frog); 
 }
+
 
 // Update the game state
 void Game::update() {
@@ -94,6 +95,10 @@ void Game::update() {
             it = dead_frogs.erase(it);
         }
     }
+
+    for(auto finished_frog: finished_frogs){
+        finished_frog->update(delta_time);
+    }   
 
     for(auto platform: platforms){
         platform->update(delta_time);
@@ -135,8 +140,9 @@ void Game::update() {
         finished_frogs_count++;
 
         Frog* finished_frog = new Frog(*frog);
-        finished_frog->rotation = 180;
+        finished_frog->turn(DOWN);
         finished_frog->winning_effect();
+        
         finished_frogs.push_back(finished_frog);
 
         // Add a new life to compensate for the reset_player call
@@ -180,9 +186,12 @@ void Game::update() {
     }
 }
 
+
 // Draw the main game scene
 void Game::draw() {
-    // Always draw the game scene first
+    // Reset the viewport
+    glViewport(0, 0, gw(), gh());
+    // Draw the main scene
     draw_frog = camera_mode == FIRST_PERSON ? false : true;
     apply_camera();
     draw_scene();
@@ -208,12 +217,15 @@ void Game::draw() {
 
     // Draw mini-map in first person mode
     if (camera_mode == FIRST_PERSON) {
-        glViewport(gw()*0.5, gh()*0.5, gw()*0.5, gh()*0.5);
-        cam->apply_ortho_top_down(player_position);
+        glViewport(gw()*0.75, gh()*0.75, gw()*0.25, gh()*0.25);
+        camera_mode = ORTHO_TOP_DOWN;
+        apply_camera();
         draw_frog = true;
         draw_scene();
+        camera_mode = FIRST_PERSON;
     }
 }
+
 
 void Game::draw_scene(){
     if(draw_frog && state == PLAYING){
@@ -241,6 +253,7 @@ void Game::draw_scene(){
     global.grid->draw();
 }
 
+
 void Game::move_forward() {
     switch(frog->direction) {
         case UP:    try_move(player_row + 1, player_column); break;
@@ -249,6 +262,7 @@ void Game::move_forward() {
         case RIGHT: try_move(player_row, player_column + 1); break;
     }
 }
+
 
 void Game::move_backward() {
     switch(frog->direction) {
@@ -259,42 +273,47 @@ void Game::move_backward() {
     }
 }
 
+
 // Turn left in first person mode
 void Game::turn_left() {
     Direction new_direction = UP;
     switch(frog->direction) {
-        case UP:    new_direction = LEFT; break;
-        case DOWN:  new_direction = RIGHT; break;
-        case LEFT:  new_direction = DOWN; break;
-        case RIGHT: new_direction = UP; break;
+        case UP:    new_direction = LEFT;   break;
+        case DOWN:  new_direction = RIGHT;  break;
+        case LEFT:  new_direction = DOWN;   break;
+        case RIGHT: new_direction = UP;     break;
     }
     frog->turn(new_direction);
 }
+
 
 // Turn right in first person mode
 void Game::turn_right() {
     Direction new_direction = UP;
     switch(frog->direction) {
-        case UP:    new_direction = RIGHT; break;
-        case DOWN:  new_direction = LEFT; break;
-        case LEFT:  new_direction = UP; break;
-        case RIGHT: new_direction = DOWN; break;
+        case UP:    new_direction = RIGHT;  break;
+        case DOWN:  new_direction = LEFT;   break;
+        case LEFT:  new_direction = UP;     break;
+        case RIGHT: new_direction = DOWN;   break;
     }
     frog->turn(new_direction);
 }
+
 
 void Game::try_move(int new_row, int new_column) {
     ofVec3f new_position = player_position;
     int closest_column = global.grid->closest_column(player_position);
 
-    // When the frog is on the last row, it can only move to a goal position
+    // When the frog is moving into the goal row (top_river_row + 1)
     if(new_row == global.grid->top_river_row + 1){
         // Can only move to the last row if it's a goal position and it's empty
         if(((closest_column - 1) % 3 != 0) || (filled_slots[closest_column])){
             return;
         }
         else{
+            // Mark the slot as filled
             filled_slots[closest_column] = true;
+            // Move into the goal row
             new_position = global.grid->get_grid_position(new_row, closest_column);
             frog->start_move(player_position, new_position);
             player_row = new_row;
@@ -302,46 +321,53 @@ void Game::try_move(int new_row, int new_column) {
         }
     }
 
+    // If the frog is moving into a cell within the x limits or is on a platform (platforms do not restrict movement)
     if((global.grid->is_valid(new_row, new_column) || frog->on_plat) && !frog->is_moving) {
         // If the frog is in the river
-        if(player_row >= global.grid->bottom_river_row && player_row <= global.grid->top_river_row + 1){
-            // If the frog is hopping platforms or leaving the river
+        if((player_row >= global.grid->bottom_river_row) && (player_row <= global.grid->top_river_row + 1)){
+            
+            // If the frog is hopping between platforms or leaving the river (it's not moving in the same row)
             if(new_row != player_row){
                 // Snap to the closest column
                 new_column = closest_column;
-                
                 new_position = global.grid->get_grid_position(new_row, new_column);
-
-                if(new_row < global.grid->bottom_river_row){
-                    new_column = global.grid->closest_column(new_position);
-                }
             }
 
-            
             // If the frog is moving in the same platform row do not snap to the closest cell
             else if(new_column != player_column){
                 GLfloat move_offset = (new_column - player_column) * global.grid_size;
+                
+                // Compensate for the platform movement
                 GLfloat platform_offset = frog->plat_velocity.x * ofGetLastFrameTime();
                 new_position.x = player_position.x + move_offset + platform_offset;
                 new_position.y = player_position.y - global.platform_offset_y;
-                new_position.z = player_position.z;
             }
         }
         // If the frog is not in the river 
         else{
+            // Just move in the grid
             new_position = global.grid->get_grid_position(new_row, new_column);
         }
 
         player_column = new_column;
         player_row = new_row;
         frog->start_move(player_position, new_position);
-
-        //player_position = new_position;
         frog->position = player_position;
     }
 }
 
+
 void Game::key_pressed(int key) {
+    if(key == '+'){
+        if(cam->theta_fov < 90){
+            cam->theta_fov += 5;
+        }
+    }
+    if(key == '-'){
+        if(cam->theta_fov > 10){
+            cam->theta_fov -= 5;
+        }
+    }
     if(key == 'f' || key == 'F'){
         ofToggleFullscreen();
     }
@@ -390,7 +416,8 @@ void Game::key_pressed(int key) {
                     case 'a': case 'A': case OF_KEY_LEFT:   turn_left(); break;
                     case 'd': case 'D': case OF_KEY_RIGHT:  turn_right(); break;
                 }
-            } else {
+            } 
+            else {
                 switch(key) {
                     case 'w': case 'W': case OF_KEY_UP:     try_move(player_row + 1, player_column); frog->turn(UP); break;
                     case 's': case 'S': case OF_KEY_DOWN:   try_move(player_row - 1, player_column); frog->turn(DOWN); break;
@@ -402,6 +429,7 @@ void Game::key_pressed(int key) {
     }
 }
 
+
 ofVec3f Game::direction_to_vector(Direction dir) {
     switch(dir) {
         case UP:    return ofVec3f(0, 0, 1);
@@ -412,23 +440,50 @@ ofVec3f Game::direction_to_vector(Direction dir) {
     }
 }
 
-// Key released event
-void Game::key_released(int key){
-}
 
-// Check if a grid cell is valid
-bool Game::is_valid(int row, int column){
-    return row >= 0 && row < global.grid_rows && column >= 0 && column < global.grid_columns;
-}
+// // Check if a grid cell is valid
+// bool Game::is_valid(int row, int column){
+//     return row >= 0 && row < global.grid_rows && column >= 0 && column < global.grid_columns;
+// }
+
 
 // Check if the frog has collided
 bool Game::check_collision(ofVec3f &pos1, ofVec3f &dim1, ofVec3f &pos2, ofVec3f &dim2) {
+    /*
+    ofVec3f mx1 = ofVec3f(
+        pos1.x - dim1.x / 2,
+        pos1.y - dim1.y / 2,
+        pos1.z - dim1.z / 2
+    );
+    ofVec3f mx2 = ofVec3f(
+        pos2.x - dim2.x / 2,
+        pos2.y - dim2.y / 2,
+        pos2.z - dim2.z / 2
+    );
+    ofVec3f mn1 = ofVec3f(
+        pos1.x + dim1.x / 2,
+        pos1.y + dim1.y / 2,
+        pos1.z + dim1.z / 2
+    );
+    ofVec3f mn2 = ofVec3f(
+        pos2.x + dim2.x / 2,
+        pos2.y + dim2.y / 2,
+        pos2.z + dim2.z / 2
+    );
+
+    return (mx1.x <= mn2.x && mn1.x >= mx2.x) &&
+           (mx1.y <= mn2.y && mn1.y >= mx2.y) &&
+           (mx1.z <= mn2.z && mn1.z >= mx2.z);
+    */
+
+    // Simplified version
     return (
         fabs(pos1.x - pos2.x) * 2 < (dim1.x + dim2.x) &&
         fabs(pos1.y - pos2.y) * 2 < (dim1.y + dim2.y) &&
         fabs(pos1.z - pos2.z) * 2 < (dim1.z + dim2.z)
     );
 }
+
 
 void Game::reset_player() {
     lives--;
@@ -442,19 +497,23 @@ void Game::reset_player() {
         return;
     }
     
-
-    player_position = global.grid->get_grid_position(0, global.grid_columns / 2);
+    // Reset position to the middle of the first row
+    player_row = 0;
+    player_column = global.grid_columns / 2;
+    player_position = global.grid->get_grid_position(player_row, player_column);
     player_position.y = 0;
+
+    // Create a new frog
     frog = new Frog(player_dimensions, player_position);
     frog->start_scale_animation();
-    frog->direction = UP;
 
+    // Make it face up and reset the eye vector
+    frog->direction = UP;
     if(camera_mode == FIRST_PERSON){
         frog->eye_vector = direction_to_vector(frog->direction);
     }
-    player_row = 0;
-    player_column = global.grid_columns / 2;
 }
+
 
 void Game::restart_game() {
     state = PLAYING;
@@ -465,6 +524,7 @@ void Game::restart_game() {
     reset_player();
     frog->start_scale_animation();
 }
+
 
 void Game::draw_win_screen(){
     // Save current matrices
@@ -487,6 +547,7 @@ void Game::draw_win_screen(){
         glMatrixMode(GL_MODELVIEW);
     glPopMatrix();
 }
+
 
 void Game::draw_hud() {
     // Save current matrices
@@ -519,6 +580,13 @@ void Game::draw_hud() {
             string stage_text = "Stage: " + ofToString(cur_stage);
             font_small.drawString(stage_text, 30, 60);
 
+            // Display current field of view and FPS 
+            string fov_text = "FOV: " + ofToString(cam->theta_fov);
+            string fps_text = "FPS: " + ofToString(ofGetFrameRate(), 0);
+            font_small.drawString(fov_text, gw() - font_small.stringWidth(fov_text) - 30, 30);
+            font_small.drawString(fps_text, gw() - font_small.stringWidth(fps_text) - 30, 60);
+
+
             // Restore matrices
             glMatrixMode(GL_PROJECTION);
         glPopMatrix();
@@ -526,6 +594,7 @@ void Game::draw_hud() {
         glMatrixMode(GL_MODELVIEW);
     glPopMatrix();
 }
+
 
 void Game::draw_game_over() {
     // Save current matrices
@@ -552,6 +621,7 @@ void Game::draw_game_over() {
     glPopMatrix();
 }
 
+
 void Game::draw_welcome_screen() {
     // Save current matrices
     glMatrixMode(GL_PROJECTION);
@@ -572,9 +642,10 @@ void Game::draw_welcome_screen() {
                 "                     Controls:\n\n"
                 "             1: Orthographic view\n"
                 "             2: Perspective view\n"
-                "             3: First-Person view\n"
+                "             3: First-Person view\n\n"
                 "Use 'WASD' or the arrow keys to move\n\n"
                 "             F: Toggle fullscreen\n\n"
+                "       +/-: Adjust the field of view\n\n"
                 "           <Press SPACE to start>";
             font.drawString(instructions, gw()/2 - font.stringWidth("Use 'WASD' or arrow keys to move")/2, gh()/2);
 
@@ -585,6 +656,7 @@ void Game::draw_welcome_screen() {
         glMatrixMode(GL_MODELVIEW);
     glPopMatrix();
 }
+
 
 void Game::draw_stage_cleared() {
     // Save current matrices
@@ -609,6 +681,7 @@ void Game::draw_stage_cleared() {
     glPopMatrix();
 }
 
+
 void Game::course_setup(int stage){
     clean_stage();
     switch(cur_stage){
@@ -625,8 +698,8 @@ void Game::course_setup(int stage){
             state = FINISHED;
             break;
     }
-
 }
+
 
 void Game::clean_stage(){
     cars.clear();

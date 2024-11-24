@@ -16,9 +16,9 @@ class Grid {
         ofVec2f get_grid_row_column(ofVec3f position);
         bool is_valid(int row, int column);
 
-        int get_rows();
-        int get_columns();
-        float get_size();
+        // int get_rows();
+        // int get_columns();
+        // float get_size();
 
         int closest_column(ofVec3f position);
 

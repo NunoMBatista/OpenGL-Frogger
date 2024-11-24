@@ -1,8 +1,8 @@
 #pragma once
 
 #include "ofMain.h"
-#include "cg_extras.h"
-#include "cg_drawing_extras.h"
+#include "../utils/cg_extras.h"
+#include "../utils/cg_drawing_extras.h"
 
 class Particle{
     public:
@@ -16,5 +16,6 @@ class Particle{
         ofVec3f velocity;
         ofVec3f color;
         float lifespan;
+        bool winning_particle;
 
 };

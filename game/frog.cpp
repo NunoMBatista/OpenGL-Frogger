@@ -2,32 +2,16 @@
 
 
 // Frog constructor
-Frog::Frog(ofVec3f dimensions, ofVec3f position)
-    : dimensions(dimensions), position(position) {
-    // Body proportions
-    body_w = dimensions.x * 0.5;
-    body_h = dimensions.y * 0.20;
-    body_l = dimensions.z * 0.5;
+Frog::Frog(ofVec3f dimensions, ofVec3f position){
+    this->dimensions = dimensions;
+    this->position = position;
 
-    // Leg proportions
-    leg_w = body_w * 0.2;
-    leg_h = body_h * 0.4;
-    leg_l = body_l * 0.1;
-
-    // Neck proportions
-    neck_w = body_w * 0.25;
-    neck_h = body_h * 0.25;
-    neck_l = body_l * 0.25;
-
-    // Head proportions
-    head_w = dimensions.x * 0.6;
-    head_h = dimensions.y * 0.2;
-    head_l = dimensions.z * 0.6;
-
-    // Eye proportions
-    eye_w = head_w * 0.3;
-    eye_h = dimensions.y * 0.2;
-    eye_l = head_l * 0.3;
+    // Frog dimensions
+    body_dim = ofVec3f(dimensions.x * 0.5, dimensions.y * 0.20, dimensions.z * 0.5);
+    leg_dim = ofVec3f(body_dim.x * 0.2, body_dim.y * 0.4, body_dim.z * 0.1);
+    neck_dim = ofVec3f(body_dim.x * 0.25, body_dim.y * 0.25, body_dim.z * 0.25);
+    head_dim = ofVec3f(dimensions.x * 0.6, dimensions.y * 0.2, dimensions.z * 0.6);
+    eye_dim = ofVec3f(head_dim.x * 0.3, dimensions.y * 0.2, head_dim.z * 0.3);
 
     rotation = 0;
     target_rotation = 0;
@@ -52,26 +36,24 @@ Frog::Frog(ofVec3f dimensions, ofVec3f position)
     explosion_rotation_speed = 720.0f; // Degrees per second
     explosion_jump_height = dimensions.y * 1.5;
 
+    // Frog state variables
     is_alive = true;
     is_bursting = false;
-
     is_drowning = false;
     is_splashing = false;
     is_winning = false;
+    is_scaling = false;
+    on_plat = false;
+    this->direction = UP;
 
     drowning_jump_height = dimensions.y * 1;
     drowning_duration = 0.7f;
 
     f_scale = 1.0f;
-
-    on_plat = false;
     plat_velocity = ofVec3f(0, 0, 0); 
-
-    is_scaling = false;
     scale_progress = 0.0f;
     scale_duration = 0.3f;
 
-    this->direction = UP;
 }
 
 // Destructor
@@ -90,7 +72,7 @@ void Frog::update(float delta_time) {
     if(is_drowning) update_drowning(delta_time);
 
     // Update the particles
-    if(is_bursting || is_splashing){
+    if(is_bursting || is_splashing || is_winning){
         // Iterate throgh the particles and remove the ones with lifespan 0
         for(auto it = particles.begin(); it != particles.end();){
             if((*it)->lifespan <= 0){
@@ -171,6 +153,7 @@ void Frog::update_movement(float delta_time) {
         movement_timer = 0;
     } 
     else {
+        // position = start_position + (target_position - start_position) * progress;
         position = start_position.getInterpolated(target_position, progress);
     }
 }
@@ -223,7 +206,6 @@ void Frog::draw(){
         if(particles.size() == 0){
             is_bursting = false;
             is_splashing = false;
-            is_winning = false; 
             if(!is_winning)
                 is_alive = false;
         }
@@ -238,7 +220,7 @@ void Frog::draw(){
 
     // Draw the frog
     glPushMatrix();
-        glTranslatef(position.x, position.y - leg_h*3, position.z);
+        glTranslatef(position.x, position.y - leg_dim.y*3, position.z);
 
         // Apply scaling animation
         if(is_scaling) {
@@ -283,29 +265,29 @@ void Frog::draw(){
 
 void Frog::draw_body() {
     glPushMatrix();
-        glScalef(body_w, body_h, body_l);
+        glScalef(body_dim.x, body_dim.y, body_dim.z);
         cube_unit();
     glPopMatrix();
 }
 
 void Frog::draw_legs() {
     glPushMatrix();
-        glTranslatef(0, -body_h*0.5, 0);
+        glTranslatef(0, -body_dim.y*0.5, 0);
         glPushMatrix();
-            glTranslatef(0, -leg_h*0.5, 0);
+            glTranslatef(0, -leg_dim.y*0.5, 0);
             // Front legs
             glPushMatrix();
-                glTranslatef(0, 0, body_l*0.25);    
-                draw_leg(-body_w*0.75, 0, 0); // Left front leg
-                draw_leg(body_w*0.75, 0, 0);  // Right front leg
+                glTranslatef(0, 0, body_dim.z*0.25);  
+                draw_leg(-body_dim.x*0.75, 0, 0); // Left front leg
+                draw_leg(body_dim.x*0.75, 0, 0);  // Right front leg
             glPopMatrix(); // End front legs
             // Back legs
             glPushMatrix();
                 // The back legs are double the size of the front legs and are placed further back
-                glTranslatef(0, 0, -body_l*0.25 - leg_l*2);   
+                glTranslatef(0, 0, -body_dim.z*0.25 - leg_dim.z*2);   
                 glScalef(1, 1, 2);
-                draw_leg(-body_w*0.75, 0, 0); // Left back leg
-                draw_leg(body_w*0.75, 0, 0);  // Right back leg
+                draw_leg(-body_dim.x*0.75, 0, 0); // Left back leg
+                draw_leg(body_dim.x*0.75, 0, 0);  // Right back leg
             glPopMatrix(); // End back legs
         glPopMatrix(); // End legs
     glPopMatrix(); // End below body
@@ -313,26 +295,26 @@ void Frog::draw_legs() {
 
 void Frog::draw_leg(GLfloat x, GLfloat y, GLfloat z) {
     glPushMatrix();
-        glTranslatef(x, y+leg_h, z);
-        glScalef(leg_w*2, leg_h*2, leg_l*2);
+        glTranslatef(x, y+leg_dim.y, z);
+        glScalef(leg_dim.x*2, leg_dim.y*2, leg_dim.z*2);
         cube_unit();
     glPopMatrix();
 }
 
 void Frog::draw_neck() {
     glPushMatrix();
-        glTranslatef(0, body_h*0.5, 0);
-        glTranslatef(0, neck_h*0.5, 0);
-        glScalef(neck_w, neck_h, neck_l);
+        glTranslatef(0, body_dim.y*0.5, 0);
+        glTranslatef(0, neck_dim.y*0.5, 0);
+        glScalef(neck_dim.x, neck_dim.y, neck_dim.z);
         cube_unit();
     glPopMatrix();
 }
 
 void Frog::draw_head() {
     glPushMatrix();
-        glTranslatef(0, body_h*0.5 + neck_h, 0);
-        glTranslatef(0, head_h*0.5, 0);
-        glScalef(head_w, head_h, head_l);
+        glTranslatef(0, body_dim.y*0.5 + neck_dim.y, 0);
+        glTranslatef(0, head_dim.y*0.5, 0);
+        glScalef(head_dim.x, head_dim.y, head_dim.z);
         cube_unit();
     glPopMatrix();
 }
@@ -340,10 +322,10 @@ void Frog::draw_head() {
 void Frog::draw_tongue() {
     glColor3f(1, 0, 0);
     glPushMatrix();
-        glTranslatef(0, body_h*0.5 + neck_h, 0);
-        glTranslatef(0, head_h*0.5, 0);
-        glTranslatef(0, 0, head_l*0.5);
-        glScalef(head_w*0.5, head_h*0.2, head_l*0.3);
+        glTranslatef(0, body_dim.y*0.5 + neck_dim.y, 0);
+        glTranslatef(0, head_dim.y*0.5, 0);
+        glTranslatef(0, 0, head_dim.z*0.5);
+        glScalef(head_dim.x*0.5, head_dim.y*0.2, head_dim.z*0.3);
         cube_unit(1, 0, 0);
     glPopMatrix();
     glColor3f(0, 1, 0);
@@ -351,24 +333,24 @@ void Frog::draw_tongue() {
 
 void Frog::draw_eyes() {
     glPushMatrix();
-        glTranslatef(0, body_h*0.5 + neck_h + head_h, 0);
-        glTranslatef(0, eye_h*0.5, 0);
-        draw_eye(-eye_w); // Left eye
-        draw_eye(eye_w);  // Right eye
+        glTranslatef(0, body_dim.y*0.5 + neck_dim.y + head_dim.y, 0);
+        glTranslatef(0, eye_dim.y*0.5, 0);
+        draw_eye(-eye_dim.x); // Left eye
+        draw_eye(eye_dim.x);  // Right eye
     glPopMatrix();
 }
 
 void Frog::draw_eye(GLfloat x) {
     glPushMatrix();
         glTranslatef(x, 0, 0);
-        glScalef(eye_w, eye_h, eye_l);
+        glScalef(eye_dim.x, eye_dim.y, eye_dim.z);
         cube_unit(1, 1, 1);
     glPopMatrix();
 
     // Pupil
     glPushMatrix();
-        glTranslatef(x * 0.5, 0, eye_l * 0.5);
-        glScalef(eye_w * 0.5, eye_h * 0.5, eye_l * 0.5);
+        glTranslatef(x * 0.5, 0, eye_dim.z * 0.5);
+        glScalef(eye_dim.x * 0.5, eye_dim.y * 0.5, eye_dim.z * 0.5);
         cube_unit(0, 0, 0);
     glPopMatrix();
 }
@@ -470,10 +452,11 @@ void Frog::winning_effect(){
     for(int i = 0; i < 300; i++){
         Particle* particle = new Particle(
             position,
-            ofVec3f(ofRandom(-3, 3), ofRandom(-3, 3), ofRandom(-3, 3)), // Increased base velocity
+            ofVec3f(ofRandom(-3, 3), ofRandom(-3, 3), ofRandom(-3, 3)),
             ofVec3f(ofRandom(0.8, 1), ofRandom(0.8, 1), ofRandom(0, 0.5)),
             ofRandom(2, 5)
         );
+        particle->winning_particle = true;
         particles.push_back(particle);
     }
 }

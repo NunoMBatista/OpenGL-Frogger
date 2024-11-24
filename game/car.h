@@ -1,8 +1,8 @@
 #pragma once 
 
 #include "ofMain.h"
-#include "cg_extras.h"
-#include "cg_drawing_extras.h"
+#include "../utils/cg_extras.h"
+#include "../utils/cg_drawing_extras.h"
 
 class Car{
     public: 
@@ -25,11 +25,8 @@ class Car{
         ofVec3f dimensions;
         ofVec3f position;
 
-        // Wheel dimensions
-        ofVec3f w_dim;
-        
-        // Current wheel rotation;
-        GLfloat w_rot;
+        ofVec3f w_dim; // Wheel dimensions
+        GLfloat w_rot; // Current wheel rotation
 
         int car_type;
         int direction_sign;

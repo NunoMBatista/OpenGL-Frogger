@@ -1,5 +1,5 @@
 #include "platform.h"
-#include "global.h"
+#include "../global/global.h"
 
 Platform::Platform(int platform_type, ofVec3f dimensions, ofVec3f position, ofVec3f velocity){
     this->dimensions = dimensions;

@@ -1,8 +1,8 @@
 #pragma once 
 
 #include "ofMain.h"
-#include "cg_drawing_extras.h"
-#include "cg_cam_extras.h"
+#include "../utils/cg_drawing_extras.h"
+#include "../utils/cg_cam_extras.h"
 #include "particle.h"
 
 class Frog {
@@ -10,6 +10,9 @@ class Frog {
         Frog(ofVec3f dimensions, ofVec3f position);
         ~Frog();
         
+        /*
+        
+        */
         void draw();
         void update(float delta_time);
         void turn(Direction direction);
@@ -84,14 +87,13 @@ class Frog {
         void draw_legs();
 
         // Body dimensions
-        GLfloat body_w, body_h, body_l;
-        GLfloat leg_w, leg_h, leg_l;
-        GLfloat neck_w, neck_h, neck_l;
-        GLfloat head_w, head_h, head_l;
-        GLfloat eye_w, eye_h, eye_l;
+        ofVec3f body_dim;
+        ofVec3f leg_dim;
+        ofVec3f neck_dim;
+        ofVec3f head_dim;
+        ofVec3f eye_dim;
 
         // Movement variables
-        //bool moving;
         ofVec3f start_position;
         ofVec3f target_position;
         float movement_timer;

@@ -1,6 +1,6 @@
 #include "car.h"
-#include "grid.h"
-#include "global.h"
+#include "../grid/grid.h"
+#include "../global/global.h"
 
 Car::Car(int car_type, ofVec3f dimensions, ofVec3f position, ofVec3f velocity){
     this->dimensions = dimensions;

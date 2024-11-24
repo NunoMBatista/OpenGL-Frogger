@@ -1,8 +1,7 @@
 
 #include "grid.h"
-#include "cg_extras.h"
-#include "cg_drawing_extras.h"
-#include "particle.h"
+#include "../utils/cg_extras.h"
+#include "../utils/cg_drawing_extras.h"
 
 Grid::Grid(int rows, int columns, float size) {
     grid_rows = rows;
@@ -14,10 +13,7 @@ Grid::Grid(int rows, int columns, float size) {
 
     top_road_row = 6;
     bottom_road_row = 1;
-
-
 }
-
 
 void Grid::draw(){
     glPushMatrix();
@@ -62,10 +58,16 @@ void Grid::draw(){
             }
         }
     glPopMatrix();
+
     // Draw the barrier around the grid
-    for (int i = 0; i <= grid_rows + 2; i++) {
-        for (int j = -6; j <= grid_columns + 5; j++) {
-            if (i < 0 || i >= grid_rows || j < 0 || j >= grid_columns) {
+    glPushMatrix();
+        for (int i = 0; i <= grid_rows + 2; i++) {
+            for (int j = -6; j <= grid_columns + 5; j++) {
+
+                // Skip the inner grid
+                if (!(i < 0 || i >= grid_rows || j < 0 || j >= grid_columns)) 
+                    continue;
+    
                 ofVec3f position = get_grid_position(i, j);
                 glPushMatrix();
                     glTranslatef(position.x, position.y, position.z);
@@ -94,11 +96,18 @@ void Grid::draw(){
                 glPopMatrix();
             }
         }
-    }
+    glPopMatrix();
+    
     // Add grey blocks on top of the blue and black barrier blocks
-    for (int i = 0; i <= grid_rows + 2; i++) {
-        for (int j = -6; j <= grid_columns + 5; j++) {
-            if (i < 0 || i >= grid_rows || j < 0 || j >= grid_columns) {
+    glPushMatrix();
+        for (int i = 0; i <= grid_rows + 2; i++) {
+            for (int j = -6; j <= grid_columns + 5; j++) {
+
+                // Skip the inner grid
+                if (!(i < 0 || i >= grid_rows || j < 0 || j >= grid_columns)){
+                    continue;
+                }
+                
                 if ((i <= top_road_row && i >= bottom_road_row) || (i <= top_river_row && i >= bottom_river_row)) {
                     ofVec3f position = get_grid_position(i, j);
                     glPushMatrix();
@@ -129,14 +138,18 @@ void Grid::draw(){
                 }
             }
         }
-    }
+    glPopMatrix();
+    
 }
 
+
+// Get the world position from a grid row and column
 ofVec3f Grid::get_grid_position(int row, int column) {
     GLfloat x = column * grid_size;
     GLfloat z = row * grid_size;
     return ofVec3f(x, 0, z);
 }
+
 
 // Get the grid row and column from a world position
 ofVec2f Grid::get_grid_row_column(ofVec3f position){
@@ -153,21 +166,20 @@ bool Grid::is_valid(int row, int column) {
         return false;
     }
 
-
     return row >= 0 && row < grid_rows && column >= 0 && column < grid_columns;
 }
 
-int Grid::get_rows() {
-    return grid_rows;
-}
+// int Grid::get_rows() {
+//     return grid_rows;
+// }
 
-int Grid::get_columns() {
-    return grid_columns;
-}
+// int Grid::get_columns() {
+//     return grid_columns;
+// }
 
-float Grid::get_size() {
-    return grid_size;
-}
+// float Grid::get_size() {
+//     return grid_size;
+// }
 
 int Grid::closest_column(ofVec3f position){
     return round(position.x / grid_size);

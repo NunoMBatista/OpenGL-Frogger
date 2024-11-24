@@ -3,8 +3,8 @@
 #include "ofMain.h"
 #include "car.h"
 #include "platform.h"
-#include "cg_extras.h"
-#include "cg_drawing_extras.h"
+#include "../utils/cg_extras.h"
+#include "../utils/cg_drawing_extras.h"
 #include <vector>
 
 inline void stage_1(std::vector<Car*> &cars, std::vector<Platform*> &platforms){
