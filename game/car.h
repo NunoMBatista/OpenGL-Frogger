@@ -3,13 +3,14 @@
 #include "ofMain.h"
 #include "../utils/cg_extras.h"
 #include "../utils/cg_drawing_extras.h"
+#include "materials.h"
 
 class Car{
     public: 
         Car(int car_type, ofVec3f dimensions, ofVec3f position, ofVec3f velocity);
 
         void draw();
-        void draw_generic_car(GLfloat r, GLfloat g, GLfloat b);
+        void draw_generic_car(enum material mat);
         void draw_wheel(ofVec3f w_pos);
 
         void draw_car_type_1();

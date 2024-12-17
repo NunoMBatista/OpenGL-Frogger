@@ -1,5 +1,5 @@
 #include "frog.h"
-
+#include "materials.h"
 
 // Frog constructor
 Frog::Frog(ofVec3f dimensions, ofVec3f position){
@@ -253,17 +253,18 @@ void Frog::draw(){
         // Explosion shrinking effect
         glScalef(f_scale, f_scale, f_scale);
         
-        
         draw_body();
         draw_legs();
         draw_neck();
         draw_head();
+
         draw_tongue();
         draw_eyes();
     glPopMatrix();
 }
 
 void Frog::draw_body() {
+    load_material(FROG_SKIN);
     glPushMatrix();
         glScalef(body_dim.x, body_dim.y, body_dim.z);
         cube_unit();
@@ -271,6 +272,7 @@ void Frog::draw_body() {
 }
 
 void Frog::draw_legs() {
+    load_material(FROG_SKIN);
     glPushMatrix();
         glTranslatef(0, -body_dim.y*0.5, 0);
         glPushMatrix();
@@ -294,6 +296,7 @@ void Frog::draw_legs() {
 }
 
 void Frog::draw_leg(GLfloat x, GLfloat y, GLfloat z) {
+    load_material(FROG_SKIN);
     glPushMatrix();
         glTranslatef(x, y+leg_dim.y, z);
         glScalef(leg_dim.x*2, leg_dim.y*2, leg_dim.z*2);
@@ -302,6 +305,7 @@ void Frog::draw_leg(GLfloat x, GLfloat y, GLfloat z) {
 }
 
 void Frog::draw_neck() {
+    load_material(FROG_SKIN);
     glPushMatrix();
         glTranslatef(0, body_dim.y*0.5, 0);
         glTranslatef(0, neck_dim.y*0.5, 0);
@@ -311,6 +315,7 @@ void Frog::draw_neck() {
 }
 
 void Frog::draw_head() {
+    load_material(FROG_SKIN);
     glPushMatrix();
         glTranslatef(0, body_dim.y*0.5 + neck_dim.y, 0);
         glTranslatef(0, head_dim.y*0.5, 0);
@@ -320,7 +325,7 @@ void Frog::draw_head() {
 }
 
 void Frog::draw_tongue() {
-    glColor3f(1, 0, 0);
+    load_material(FROG_TONGUE);
     glPushMatrix();
         glTranslatef(0, body_dim.y*0.5 + neck_dim.y, 0);
         glTranslatef(0, head_dim.y*0.5, 0);
@@ -328,10 +333,10 @@ void Frog::draw_tongue() {
         glScalef(head_dim.x*0.5, head_dim.y*0.2, head_dim.z*0.3);
         cube_unit(1, 0, 0);
     glPopMatrix();
-    glColor3f(0, 1, 0);
 }
 
 void Frog::draw_eyes() {
+    load_material(EYE);
     glPushMatrix();
         glTranslatef(0, body_dim.y*0.5 + neck_dim.y + head_dim.y, 0);
         glTranslatef(0, eye_dim.y*0.5, 0);
@@ -341,6 +346,7 @@ void Frog::draw_eyes() {
 }
 
 void Frog::draw_eye(GLfloat x) {
+    load_material(EYE);
     glPushMatrix();
         glTranslatef(x, 0, 0);
         glScalef(eye_dim.x, eye_dim.y, eye_dim.z);
@@ -348,6 +354,7 @@ void Frog::draw_eye(GLfloat x) {
     glPopMatrix();
 
     // Pupil
+    load_material(PUPIL);   
     glPushMatrix();
         glTranslatef(x * 0.5, 0, eye_dim.z * 0.5);
         glScalef(eye_dim.x * 0.5, eye_dim.y * 0.5, eye_dim.z * 0.5);
@@ -401,24 +408,28 @@ void Frog::burst_effect(){
         ofVec3f p_position = position;
         p_position.y += jump_height/2;
         
+        enum material mat; 
         ofVec3f p_color;
         // Eyes explosion
         if(i > 90){
-            p_color = ofVec3f(1, 1, 1);
+            //p_color = ofVec3f(1, 1, 1);
+            mat = EYE;
         }
         // Tongue explosion
         else if(i < 9){
-            p_color = ofVec3f(1, 0, 0);
+            //p_color = ofVec3f(1, 0, 0);
+            mat = FROG_TONGUE;
         }
         // Body explosion
         else{
-            p_color = ofVec3f(0, ofRandom(0.5, 1), 0);
+            //p_color = ofVec3f(0, ofRandom(0.5, 1), 0);
+            mat = FROG_SKIN;
         }
         
         Particle* particle = new Particle(
             p_position,
             ofVec3f(ofRandom(-1.5, 1.5), ofRandom(-1.5, 1.5), ofRandom(-1.5, 1.5)), // Increased base velocity
-            p_color,
+            mat,
             ofRandom(2, 5)
         );
         particles.push_back(particle);
@@ -439,7 +450,7 @@ void Frog::splash_effect(){
         Particle* particle = new Particle(
             p_position,
             ofVec3f(ofRandom(-0.3, 0.3), ofRandom(1.5, 3), ofRandom(-0.3, 0.3)),
-            ofVec3f(0, 0, ofRandom(0, 1)),
+            WATER_PARTICLE,
             ofRandom(2, 5)
         );
         
@@ -453,7 +464,7 @@ void Frog::winning_effect(){
         Particle* particle = new Particle(
             position,
             ofVec3f(ofRandom(-3, 3), ofRandom(-3, 3), ofRandom(-3, 3)),
-            ofVec3f(ofRandom(0.8, 1), ofRandom(0.8, 1), ofRandom(0, 0.5)),
+            GOLD_PARTICLE,
             ofRandom(2, 5)
         );
         particle->winning_particle = true;

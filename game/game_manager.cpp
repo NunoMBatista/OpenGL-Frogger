@@ -14,6 +14,12 @@ Game::Game() {
     glEnable(GL_DEPTH_TEST);
     ofSetBackgroundColor(0, 0, 0);
 
+    // Initialize the lighting
+    glEnable(GL_LIGHTING);
+    glEnable(GL_NORMALIZE);
+    ambient_light = ofVec4f(1, 1, 1, 1);
+    glLightModelfv(GL_LIGHT_MODEL_AMBIENT, ambient_light.getPtr());
+
     // Initialize the game state
     state = WELCOME_SCREEN;
     cur_stage = 1;

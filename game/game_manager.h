@@ -104,4 +104,12 @@ class Game{
         void draw_welcome_screen();
         void draw_win_screen();
         void draw_stage_cleared();
+
+        /*
+        ******** Lighting definitions *******
+        */
+        ofVec4f ambient_light;
+        ofVec4f diffuse_light;
+        ofVec4f specular_light;
+
 };

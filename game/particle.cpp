@@ -1,11 +1,13 @@
 #include "particle.h"
 #include "../global/global.h"
+#include "materials.h"
 
-Particle::Particle(ofVec3f position, ofVec3f velocity, ofVec3f color, float lifespan){
+Particle::Particle(ofVec3f position, ofVec3f velocity, enum material mat, float lifespan){
     this->position = position;
     this->velocity = velocity;
     this->lifespan = lifespan;
-    this->color = color;
+    //this->color = color;
+    this->mat = mat;
     this->time_lived = 0;
     winning_particle = false;
 }
@@ -65,12 +67,13 @@ void Particle::update(float delta_time) {
 void Particle::draw(){
     //position += velocity;
 
+    load_material(mat);
     glPushMatrix();
         glTranslatef(position.x, position.y, position.z);
         glRotatef(ofRandom(0, 360), 1, 1, 1);
         glScalef(2*lifespan, 2*lifespan, 2*lifespan);
         //cube_unit(ofRandom(0, 1), ofRandom(0, 1), ofRandom(0, 1));
-        cube_unit(color.x, color.y, color.z);
+        cube_unit(1,1,1);
     glPopMatrix();
 }
 
