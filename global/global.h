@@ -19,6 +19,14 @@ public:
 
     GLfloat base_element_speed;    
     GLfloat platform_offset_y;
+
+
+    void load_textures();
+    ofImage life;
+    ofImage purple_grass;
+    ofImage tunnel;
+    ofImage green_grass;
 };
+
 
 extern Global global;

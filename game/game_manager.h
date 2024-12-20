@@ -21,6 +21,11 @@ enum GameState {
     FINISHED
 };
 
+enum LightState {
+    DAY,
+    NIGHT
+};
+
 class Game{
     public: 
         Game();
@@ -109,7 +114,31 @@ class Game{
         ******** Lighting definitions *******
         */
         ofVec4f ambient_light;
-        ofVec4f diffuse_light;
-        ofVec4f specular_light;
+
+        // The sun is a directional light
+        ofVec4f sun_direction;
+        GLfloat sun_direction_theta;
+        ofVec4f sun_diffuse;
+        ofVec4f sun_specular;
+        ofVec4f sun_ambient;
+
+        // The frog is a point light
+        ofVec4f frog_diffuse;
+        ofVec4f frog_specular;
+        ofVec4f frog_ambient;
+
+        // The winning spots have a spot light
+        ofVec3f winning_positions[5];
+        ofVec3f winning_direction;
+        ofVec4f winning_ambient;
+        ofVec4f winning_diffuse;
+        ofVec4f winning_specular;
+        GLfloat winning_cutoff;
+        GLfloat winning_exponent;
+
+        void setup_lights();
+        void draw_lights();
+
+        LightState light_state;
 
 };

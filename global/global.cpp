@@ -15,4 +15,20 @@ Global::Global() {
 
     base_element_speed = 50.0f;
     platform_offset_y = 10.0f;
+
+}
+
+void Global::load_textures(){
+    // Load the textures
+    life.load("life.png");
+    life.setImageType(OF_IMAGE_COLOR_ALPHA);
+
+    purple_grass.load("purple_grass.png");
+    purple_grass.setImageType(OF_IMAGE_COLOR_ALPHA);
+
+    tunnel.load("tunnel.png");
+    tunnel.setImageType(OF_IMAGE_COLOR_ALPHA);
+
+    green_grass.load("green_grass.jpg");
+    green_grass.setImageType(OF_IMAGE_COLOR_ALPHA);
 }

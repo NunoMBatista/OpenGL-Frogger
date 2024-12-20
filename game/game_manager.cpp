@@ -13,12 +13,9 @@
 Game::Game() {
     glEnable(GL_DEPTH_TEST);
     ofSetBackgroundColor(0, 0, 0);
+    ofDisableArbTex();
 
-    // Initialize the lighting
-    glEnable(GL_LIGHTING);
-    glEnable(GL_NORMALIZE);
-    ambient_light = ofVec4f(1, 1, 1, 1);
-    glLightModelfv(GL_LIGHT_MODEL_AMBIENT, ambient_light.getPtr());
+    setup_lights();
 
     // Initialize the game state
     state = WELCOME_SCREEN;
@@ -52,6 +49,8 @@ Game::Game() {
     font.load("RetroFont.ttf", font_size);
     font_big.load("RetroFont.ttf", font_size * 5);
     font_small.load("RetroFont.ttf", font_size * 0.5);
+
+    global.load_textures();
 }
 
 
@@ -72,6 +71,62 @@ Game::~Game() {
     }
 }
 
+void Game::setup_lights(){
+    // Initialize the lighting
+    glEnable(GL_LIGHTING);
+    glEnable(GL_NORMALIZE);
+    glShadeModel(GL_SMOOTH);
+    
+    light_state = DAY;
+
+    glLightModeli(GL_LIGHT_MODEL_LOCAL_VIEWER, GL_TRUE);
+    //glLightModeli(GL_LIGHT_MODEL_TWO_SIDE, GL_FALSE);
+
+    // ambient_light = ofVec4f(0.1, 0.1, 0.1, 1);
+    // glLightModelfv(GL_LIGHT_MODEL_AMBIENT, ambient_light.getPtr());
+    
+    // Initialize the sun directional light
+    sun_diffuse = ofVec4f(1, 1, 1, 1);
+    sun_specular = ofVec4f(1, 1, 1, 1);
+    //sun_diffuse = ofVec4f(0.3, 0.3, 0.3, 1);
+    //sun_specular = ofVec4f(0.3, 0.3, 0.3, 1);
+    sun_ambient = ofVec4f(0.1, 0.1, 0.1, 1);
+    
+    sun_direction_theta = 0;
+    glLightfv(GL_LIGHT0, GL_DIFFUSE, sun_diffuse.getPtr());
+    glLightfv(GL_LIGHT0, GL_SPECULAR, sun_specular.getPtr());
+    glLightfv(GL_LIGHT0, GL_AMBIENT, sun_ambient.getPtr());
+
+    // Initialize the frog point light
+    frog_diffuse = ofVec4f(1, 1, 1, 1);
+    frog_specular = ofVec4f(1, 1, 1, 1);
+    frog_ambient = ofVec4f(0.1, 0.1, 0.1, 1);
+    glLightfv(GL_LIGHT1, GL_DIFFUSE, frog_diffuse.getPtr());
+    glLightfv(GL_LIGHT1, GL_SPECULAR, frog_specular.getPtr());
+    glLightfv(GL_LIGHT1, GL_AMBIENT, frog_ambient.getPtr());
+    // Add attenuation for shorter range
+    glLightf(GL_LIGHT1, GL_CONSTANT_ATTENUATION, 0.1);
+    glLightf(GL_LIGHT1, GL_LINEAR_ATTENUATION, 0.0001);
+    glLightf(GL_LIGHT1, GL_QUADRATIC_ATTENUATION, 0.0001);
+
+    // Initialize the winning spot spot light
+    winning_diffuse = ofVec4f(1, 1, 1, 1);
+    winning_specular = ofVec4f(1, 1, 1, 1);
+    winning_ambient = ofVec4f(1, 1, 1, 1);
+    winning_cutoff = 15;
+    winning_exponent = 30;
+    glLightfv(GL_LIGHT2, GL_DIFFUSE, winning_diffuse.getPtr());
+    glLightfv(GL_LIGHT2, GL_SPECULAR, winning_specular.getPtr());
+    glLightf(GL_LIGHT2, GL_SPOT_CUTOFF, winning_cutoff);
+    glLightf(GL_LIGHT2, GL_SPOT_EXPONENT, winning_exponent);
+    //glLightfv(GL_LIGHT2, GL_SPOT_DIRECTION, winning_direction.getPtr());
+
+    // attenuation for the spot light
+    glLightf(GL_LIGHT2, GL_CONSTANT_ATTENUATION, 1);
+    glLightf(GL_LIGHT2, GL_LINEAR_ATTENUATION, 0);
+    glLightf(GL_LIGHT2, GL_QUADRATIC_ATTENUATION, 0);
+    
+}
 
 void Game::apply_camera() { 
     cam->apply(camera_mode, player_position, frog); 
@@ -200,6 +255,7 @@ void Game::draw() {
     // Draw the main scene
     draw_frog = camera_mode == FIRST_PERSON ? false : true;
     apply_camera();
+    draw_lights();
     draw_scene();
 
     // Draw HUD and overlays based on state
@@ -226,12 +282,66 @@ void Game::draw() {
         glViewport(gw()*0.75, gh()*0.75, gw()*0.25, gh()*0.25);
         camera_mode = ORTHO_TOP_DOWN;
         apply_camera();
+        draw_lights();
         draw_frog = true;
         draw_scene();
         camera_mode = FIRST_PERSON;
     }
 }
 
+void Game::draw_lights(){
+
+    glEnable(GL_LIGHTING);
+
+    if(light_state == DAY){
+        sun_diffuse = ofVec4f(0.9, 0.9, 0.9, 1);
+        sun_specular = ofVec4f(0.9, 0.9, 0.9, 1);
+    }
+    else if (light_state == NIGHT){      
+        sun_diffuse = ofVec4f(0.1, 0.1, 0.1, 1);
+        sun_specular = ofVec4f(0.1, 0.1, 0.1, 1);
+    }
+    sun_ambient = ofVec4f(0.1, 0.1, 0.1, 1);
+    glLightfv(GL_LIGHT0, GL_DIFFUSE, sun_diffuse.getPtr());
+    glLightfv(GL_LIGHT0, GL_SPECULAR, sun_specular.getPtr());
+    glLightfv(GL_LIGHT0, GL_AMBIENT, sun_ambient.getPtr());
+
+    sun_direction_theta = 45;
+    sun_direction = ofVec4f(
+        -cos(sun_direction_theta * PI / 180),
+        -cos(sun_direction_theta * PI / 180),
+        -sin(sun_direction_theta * PI / 180),
+        0
+    );
+
+    glLightfv(GL_LIGHT0, GL_POSITION, sun_direction.getPtr());
+    glEnable(GL_LIGHT0);
+
+    if(light_state == DAY){
+        glDisable(GL_LIGHT1);
+    }
+    else if(light_state == NIGHT){
+        glLightfv(GL_LIGHT1, GL_POSITION, frog->position.getPtr());
+        glEnable(GL_LIGHT1);
+    }
+
+    winning_positions[0] = global.grid->get_grid_position(5, 5);
+    winning_positions[0].y = 2.5;
+
+    winning_direction = ofVec3f(0, -1, 0);
+
+    glLightfv(GL_LIGHT2, GL_POSITION, winning_positions[0].getPtr());
+    glLightfv(GL_LIGHT2, GL_SPOT_DIRECTION, winning_direction.getPtr());
+    glEnable(GL_LIGHT2);
+
+    // Draw a cube at the winning position
+    glPushMatrix();
+        glTranslatef(winning_positions[0].x, winning_positions[0].y, winning_positions[0].z);
+        ofSetColor(0, 255, 0);
+        ofDrawBox(0, 0, 0, 10);
+    glPopMatrix();
+
+}
 
 void Game::draw_scene(){
     if(draw_frog && state == PLAYING){
@@ -377,6 +487,14 @@ void Game::key_pressed(int key) {
     if(key == 'f' || key == 'F'){
         ofToggleFullscreen();
     }
+    if(key == 'n' || key == 'N'){
+        if(light_state == NIGHT){
+            light_state = DAY;
+        }
+        else if(light_state == DAY){
+            light_state = NIGHT;
+        }
+    }
 
     switch(state) {
         case WELCOME_SCREEN:
@@ -447,42 +565,8 @@ ofVec3f Game::direction_to_vector(Direction dir) {
 }
 
 
-// // Check if a grid cell is valid
-// bool Game::is_valid(int row, int column){
-//     return row >= 0 && row < global.grid_rows && column >= 0 && column < global.grid_columns;
-// }
-
-
 // Check if the frog has collided
 bool Game::check_collision(ofVec3f &pos1, ofVec3f &dim1, ofVec3f &pos2, ofVec3f &dim2) {
-    /*
-    ofVec3f mx1 = ofVec3f(
-        pos1.x - dim1.x / 2,
-        pos1.y - dim1.y / 2,
-        pos1.z - dim1.z / 2
-    );
-    ofVec3f mx2 = ofVec3f(
-        pos2.x - dim2.x / 2,
-        pos2.y - dim2.y / 2,
-        pos2.z - dim2.z / 2
-    );
-    ofVec3f mn1 = ofVec3f(
-        pos1.x + dim1.x / 2,
-        pos1.y + dim1.y / 2,
-        pos1.z + dim1.z / 2
-    );
-    ofVec3f mn2 = ofVec3f(
-        pos2.x + dim2.x / 2,
-        pos2.y + dim2.y / 2,
-        pos2.z + dim2.z / 2
-    );
-
-    return (mx1.x <= mn2.x && mn1.x >= mx2.x) &&
-           (mx1.y <= mn2.y && mn1.y >= mx2.y) &&
-           (mx1.z <= mn2.z && mn1.z >= mx2.z);
-    */
-
-    // Simplified version
     return (
         fabs(pos1.x - pos2.x) * 2 < (dim1.x + dim2.x) &&
         fabs(pos1.y - pos2.y) * 2 < (dim1.y + dim2.y) &&
@@ -533,6 +617,8 @@ void Game::restart_game() {
 
 
 void Game::draw_win_screen(){
+    glDisable(GL_LIGHTING);
+    glEnable(GL_COLOR_MATERIAL);
     // Save current matrices
     glMatrixMode(GL_PROJECTION);
     glPushMatrix();
@@ -543,22 +629,27 @@ void Game::draw_win_screen(){
             glLoadIdentity();
 
             // Draw win screen
-            glColor3f(0, 1, 0);
+            glColor3f(1, 1, 0);
             font_big.drawString("YOU WIN!", gw()/2 - font_big.stringWidth("YOU WIN!")/2, gh()/2 - 100);
             font.drawString("<Press SPACE to restart>", gw()/2 - font.stringWidth("Press SPACE to restart")/2, gh()/2 + 20);
-
+            glColor3f(1, 1, 1);
             // Restore matrices
             glMatrixMode(GL_PROJECTION);
         glPopMatrix();
         glMatrixMode(GL_MODELVIEW);
     glPopMatrix();
+
+    glDisable(GL_COLOR_MATERIAL);
+    glEnable(GL_LIGHTING);
 }
 
 
 void Game::draw_hud() {
     // Save current matrices
     glMatrixMode(GL_PROJECTION);
-    
+    glDisable(GL_LIGHTING);
+    glEnable(GL_COLOR_MATERIAL);
+
     glPushMatrix();
     
         glLoadIdentity();
@@ -569,20 +660,24 @@ void Game::draw_hud() {
         glPushMatrix();
             glLoadIdentity();
 
-            glColor3f(0, 1, 0);
-
+            glColor3f(0, 1, 0);            
             font_small.drawString("Lives:", 30, 30);
+            glColor3f(1, 1, 1);
 
             // Draw lives
             for (int i = 0; i < lives; i++) {
                 glPushMatrix();
                     glTranslatef(font_small.stringWidth("Lives:      ") + 30 + i * 40, 26, 0);
-                    glScalef(20, 20, 1);
-                    rectFill_unit();
+                    // life.resize(20, 20);
+                    // life.draw(-10, -10);
+                    global.life.draw(-10, -10, 20, 20);
+                    //global.grid->purple_grass.draw(-10, -10, 20, 20);
                 glPopMatrix();
             }
 
+
             // Draw stage number
+            glColor3f(0, 1, 0);            
             string stage_text = "Stage: " + ofToString(cur_stage);
             font_small.drawString(stage_text, 30, 60);
 
@@ -592,17 +687,23 @@ void Game::draw_hud() {
             font_small.drawString(fov_text, gw() - font_small.stringWidth(fov_text) - 30, 30);
             font_small.drawString(fps_text, gw() - font_small.stringWidth(fps_text) - 30, 60);
 
+            glColor3f(1, 1, 1);
 
             // Restore matrices
             glMatrixMode(GL_PROJECTION);
         glPopMatrix();
     
         glMatrixMode(GL_MODELVIEW);
+
     glPopMatrix();
+    glDisable(GL_COLOR_MATERIAL);
+    glEnable(GL_LIGHTING);
 }
 
 
 void Game::draw_game_over() {
+    glDisable(GL_LIGHTING);
+    glEnable(GL_COLOR_MATERIAL);
     // Save current matrices
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
@@ -618,6 +719,7 @@ void Game::draw_game_over() {
             glColor3f(1, 0, 0);
             font_big.drawString("GAME OVER", gw()/2 - font_big.stringWidth("GAME OVER")/2, gh()/2 - 100);
             font.drawString("<Press SPACE to restart>", gw()/2 - font.stringWidth("Press SPACE to restart")/2, gh()/2 + 20);
+            glColor3f(1,1,1);
 
             // Restore matrices
             glMatrixMode(GL_PROJECTION);
@@ -625,10 +727,14 @@ void Game::draw_game_over() {
         
         glMatrixMode(GL_MODELVIEW);
     glPopMatrix();
+    glDisable(GL_COLOR_MATERIAL);
+    glEnable(GL_LIGHTING);
 }
 
 
 void Game::draw_welcome_screen() {
+    glDisable(GL_LIGHTING);
+    glEnable(GL_COLOR_MATERIAL);
     // Save current matrices
     glMatrixMode(GL_PROJECTION);
     glPushMatrix();
@@ -651,6 +757,7 @@ void Game::draw_welcome_screen() {
                 "             3: First-Person view\n\n"
                 "Use 'WASD' or the arrow keys to move\n\n"
                 "             F: Toggle fullscreen\n\n"
+                "             N: Toggle night mode\n\n"
                 "       +/-: Adjust the field of view\n\n"
                 "           <Press SPACE to start>";
             font.drawString(instructions, gw()/2 - font.stringWidth("Use 'WASD' or arrow keys to move")/2, gh()/2);
@@ -661,10 +768,14 @@ void Game::draw_welcome_screen() {
     
         glMatrixMode(GL_MODELVIEW);
     glPopMatrix();
+    glDisable(GL_COLOR_MATERIAL);
+    glEnable(GL_LIGHTING);
 }
 
 
 void Game::draw_stage_cleared() {
+    glDisable(GL_LIGHTING);
+    glEnable(GL_COLOR_MATERIAL);
     // Save current matrices
     glMatrixMode(GL_PROJECTION);
     glPushMatrix();
@@ -678,13 +789,15 @@ void Game::draw_stage_cleared() {
             glColor3f(1, 1, 0);
             font_big.drawString("STAGE CLEARED!", gw()/2 - font_big.stringWidth("STAGE CLEARED!")/2, gh()/2 - 100);
             font.drawString("<Press SPACE to continue>", gw()/2 - font.stringWidth("Press SPACE to continue")/2, gh()/2 + 20);
-            
+            glColor3f(1, 1, 1);
 
             // Restore matrices
             glMatrixMode(GL_PROJECTION);
         glPopMatrix();
         glMatrixMode(GL_MODELVIEW);
     glPopMatrix();
+    glDisable(GL_COLOR_MATERIAL);
+    glEnable(GL_LIGHTING);
 }
 
 

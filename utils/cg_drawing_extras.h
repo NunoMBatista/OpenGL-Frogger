@@ -12,21 +12,6 @@ inline void drawPoint() {
 	glEnd();
 }
 
-//desenha axis 3D
-inline void axis3d() {
-	glBegin(GL_LINES);
-	glColor3f(1, 0, 0);
-	glVertex3f(0, 0, 0);
-	glVertex3f(1, 0, 0);
-	glColor3f(0, 1, 0);
-	glVertex3f(0, 0, 0);
-	glVertex3f(0, 1, 0);
-	glColor3f(1, 1, 1);
-	glVertex3f(0, 0, 0);
-	glVertex3f(0, 0, 1);
-	glEnd();
-}
-
 //função que desenha quadrado unitário 
 //centrado na origem e preenchido
 inline void rectFill_unit() {
@@ -36,6 +21,85 @@ inline void rectFill_unit() {
 	glVertex3d(0.5, 0.5, 0.);
 	glVertex3d(0.5, -0.5, 0.);
 	glEnd();
+}
+
+inline void rect_texture_unit_aux(int N){
+	// Bottom left - start of tiling
+	glTexCoord2f(0, N);
+	glVertex3f(-0.5, -0.5, 0);
+	
+	// Top left - N tiles up
+	glTexCoord2f(0, 0);
+	glVertex3f(-0.5, 0.5, 0);
+	
+	// Top right - N tiles across and up  
+	glTexCoord2f(N, 0);
+	glVertex3f(0.5, 0.5, 0);
+
+	// Bottom right - N tiles across
+	glTexCoord2f(N, N); 
+	glVertex3f(0.5, -0.5, 0);
+}
+
+inline void rect_texture_unit(int N){
+    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+    glBegin(GL_QUADS);
+        glNormal3f(0, 0, 1);
+		rect_texture_unit_aux(N);
+    glEnd();
+}
+
+
+inline void cube_texture_unit(int N){
+	glEnable(GL_NORMALIZE);
+    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+	glPushMatrix();
+		glTranslatef(0, 0, 0.5);
+		glBegin(GL_QUADS);
+			glNormal3f(0, 0, 1);
+			rect_texture_unit_aux(N);
+		glEnd();
+	glPopMatrix();
+	glPushMatrix();
+		glTranslatef(0, 0, -0.5);
+		glRotatef(180, 0, 1, 0);
+		glBegin(GL_QUADS);
+			glNormal3f(0, 0, -1);
+			rect_texture_unit_aux(N);
+		glEnd();
+	glPopMatrix();
+	glPushMatrix();
+		glTranslatef(0, 0.5, 0);
+		glRotatef(90, 1, 0, 0);
+		glBegin(GL_QUADS);
+			glNormal3f(0, 1, 0);
+			rect_texture_unit_aux(N);
+		glEnd();
+	glPopMatrix();
+	glPushMatrix();
+		glTranslatef(0, -0.5, 0);
+		glRotatef(270, 1, 0, 0);
+		glBegin(GL_QUADS);
+			glNormal3f(0, -1, 0);
+			rect_texture_unit_aux(N);
+		glEnd();
+	glPopMatrix();
+	glPushMatrix();
+		glTranslatef(0.5, 0, 0);
+		glRotatef(90, 0, 1, 0);
+		glBegin(GL_QUADS);
+			glNormal3f(1, 0, 0);
+			rect_texture_unit_aux(N);
+		glEnd();
+	glPopMatrix();
+	glPushMatrix();
+		glTranslatef(-0.5, 0, 0);
+		glRotatef(270, 0, 1, 0);
+		glBegin(GL_QUADS);
+			glNormal3f(-1, 0, 0);
+			rect_texture_unit_aux(N);
+		glEnd();
+	glPopMatrix();
 }
 
 inline void cube_unit_outline() {
@@ -142,6 +206,6 @@ inline void cube_unit(GLfloat R = 0, GLfloat G = 1, GLfloat B = 0) {
 		glVertex3f(p, -p, -p);
 	glEnd();
 
-	cube_unit_outline();
+	//cube_unit_outline();
 }
 

@@ -121,7 +121,6 @@ inline void load_material(enum material mat){
     GLfloat turtle_shell_spec[] = {0.7, 0.0, 0.0, 1.0};
     GLfloat turtle_shell_coef = 0.5;
 
-
     GLfloat turtle_skin_amb[] = {0.0, 0.5, 0.0, 1.0};
     GLfloat turtle_skin_diff[] = {0.0, 0.7, 0.0, 1.0};
     GLfloat turtle_skin_spec[] = {0.0, 0.5, 0.0, 1.0};
@@ -133,11 +132,11 @@ inline void load_material(enum material mat){
     GLfloat water_coef = 0.5;
 
     GLfloat road_amb[] = {0.3, 0.3, 0.3, 1.0};
-    GLfloat road_diff[] = {0.5, 0.5, 0.5, 1.0};
+    GLfloat road_diff[] = {0.7, 0.7, 0.7, 1.0};
     GLfloat road_spec[] = {0.3, 0.3, 0.3, 1.0};
     GLfloat road_coef = 0.5;
 
-    GLfloat purple_grass_amb[] = {0.5, 0.0, 0.5, 1.0};
+    GLfloat purple_grass_amb[] = {0.7, 0.0, 0.7, 1.0};
     GLfloat purple_grass_diff[] = {0.7, 0.0, 0.7, 1.0};
     GLfloat purple_grass_spec[] = {0.5, 0.0, 0.5, 1.0};
     GLfloat purple_grass_coef = 0.5;
@@ -155,9 +154,9 @@ inline void load_material(enum material mat){
 
     // Water particle can have multiple shades of blue
     GLfloat blue_shade = ofRandom(0.5, 1);
-    GLfloat water_particle_amb[] = {0.0, 0.0, blue_shade*0.1, 1.0};
-    GLfloat water_particle_diff[] = {0.0, 0.0, blue_shade*0.3, 1.0};
-    GLfloat water_particle_spec[] = {0.0, 0.0, blue_shade*0.1, 1.0};
+    GLfloat water_particle_amb[] = {0.0, 0.0, blue_shade*0.1f, 1.0};
+    GLfloat water_particle_diff[] = {0.0, 0.0, blue_shade, 1.0};
+    GLfloat water_particle_spec[] = {0.0, 0.0, blue_shade, 1.0};
     GLfloat water_particle_coef = 0.5;
 
     GLfloat green_grass_amb[] = {0, 0.5, 0, 1.0};
@@ -310,6 +309,8 @@ inline void load_material(enum material mat){
             glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, green_grass_diff);
             glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, green_grass_spec);
             glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, green_grass_coef);
+            break;
+        default:
             break;
     }
 }
