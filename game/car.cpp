@@ -6,7 +6,7 @@
 Car::Car(int car_type, ofVec3f dimensions, ofVec3f position, ofVec3f velocity){
     this->dimensions = dimensions;
     this->position = position;
-    this->velocity = velocity;
+    this->base_velocity = velocity;
     this->car_type = car_type;
     
     
@@ -18,6 +18,7 @@ Car::Car(int car_type, ofVec3f dimensions, ofVec3f position, ofVec3f velocity){
 }
 
 void Car::update(GLfloat delta_time){
+    this->velocity = base_velocity * global.base_element_speed;
     // position += velocity;
     position += velocity * delta_time;
 

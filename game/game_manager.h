@@ -31,6 +31,12 @@ enum Difficulty {
     HARD
 };
 
+struct light_component_flags {
+    bool ambient = true;
+    bool diffuse = true;
+    bool specular = true;
+};
+
 class Game{
     public: 
         Game();
@@ -126,11 +132,15 @@ class Game{
         ofVec4f sun_diffuse;
         ofVec4f sun_specular;
         ofVec4f sun_ambient;
+        struct light_component_flags sun_flags;
+        bool sun_light_on = true;
 
         // The frog is a point light
         ofVec4f frog_diffuse;
         ofVec4f frog_specular;
         ofVec4f frog_ambient;
+        struct light_component_flags frog_flags;
+        bool frog_light_on = true;
 
         // The winning spots have a spot light
         GLfloat winning_positions[5][4];
@@ -140,8 +150,13 @@ class Game{
         ofVec4f winning_specular;
         GLfloat winning_cutoff;
         GLfloat winning_exponent;
+        struct light_component_flags winning_flags;
+        bool winning_light_on = true;
 
         void setup_lights();
+        void reset_light_flags();
+        void disable_lights();  
+        void check_light_flags();
         void draw_lights();
 
         LightState light_state;

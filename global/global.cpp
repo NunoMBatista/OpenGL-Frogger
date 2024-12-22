@@ -15,7 +15,6 @@ Global::Global() {
 
     base_element_speed = 50.0f;
     platform_offset_y = 10.0f;
-
 }
 
 void Global::load_textures(){

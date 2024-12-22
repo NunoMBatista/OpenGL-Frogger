@@ -28,6 +28,7 @@ class Platform{
         ofVec3f velocity;
         ofVec3f dimensions;
         ofVec3f position;
+        ofVec3f base_velocity;
 
         int platform_type;
 

@@ -25,6 +25,7 @@ class Car{
         ofVec3f velocity;
         ofVec3f dimensions;
         ofVec3f position;
+        ofVec3f base_velocity;
 
         ofVec3f w_dim; // Wheel dimensions
         GLfloat w_rot; // Current wheel rotation

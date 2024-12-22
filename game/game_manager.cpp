@@ -15,6 +15,7 @@ Game::Game() {
     ofSetBackgroundColor(0, 0, 0);
     ofDisableArbTex();
 
+    light_state = NIGHT;
     setup_lights();
 
     // Initialize the game state
@@ -78,7 +79,6 @@ void Game::setup_lights(){
     glEnable(GL_NORMALIZE);
     glShadeModel(GL_SMOOTH);
     
-    light_state = DAY;
 
     glLightModeli(GL_LIGHT_MODEL_LOCAL_VIEWER, GL_TRUE);
     //glLightModeli(GL_LIGHT_MODEL_TWO_SIDE, GL_FALSE);
@@ -315,8 +315,72 @@ void Game::draw() {
     }
 }
 
+void Game::disable_lights(){
+    if(!sun_light_on){
+        glDisable(GL_LIGHT0);
+    }
+    if(!frog_light_on){
+        glDisable(GL_LIGHT1);
+        glDisable(GL_LIGHT7);
+    }
+    if(!winning_light_on){
+        for(int i = 0; i < 5; i++){
+            glDisable(GL_LIGHT2 + i);
+        }
+    }
+}
+
+void Game::check_light_flags(){
+    GLfloat no_ambient[] = {0, 0, 0, 1};
+    GLfloat no_diffuse[] = {0, 0, 0, 1};
+    GLfloat no_specular[] = {0, 0, 0, 1};
+
+
+
+    if(!sun_flags.ambient){
+            glLightfv(GL_LIGHT0, GL_AMBIENT, no_ambient);
+        }
+    if(!sun_flags.diffuse){
+        glLightfv(GL_LIGHT0, GL_DIFFUSE, no_diffuse);
+    }
+    if(!sun_flags.specular){
+        glLightfv(GL_LIGHT0, GL_SPECULAR, no_specular);
+    }
+    
+    if(!frog_flags.ambient){
+        glLightfv(GL_LIGHT7, GL_AMBIENT, no_ambient);
+        glLightfv(GL_LIGHT1, GL_AMBIENT, no_ambient);
+    }
+    if(!frog_flags.diffuse){
+        glLightfv(GL_LIGHT7, GL_DIFFUSE, no_diffuse);
+        glLightfv(GL_LIGHT1, GL_DIFFUSE, no_diffuse);
+    }
+    if(!frog_flags.specular){
+        glLightfv(GL_LIGHT7, GL_SPECULAR, no_specular);
+        glLightfv(GL_LIGHT1, GL_SPECULAR, no_specular);
+    }
+
+    if(!winning_flags.ambient){
+        for(int i = 0; i < 5; i++){
+            glLightfv(GL_LIGHT2 + i, GL_AMBIENT, no_ambient);
+        }
+    }
+    if(!winning_flags.diffuse){
+        for(int i = 0; i < 5; i++){
+            glLightfv(GL_LIGHT2 + i, GL_DIFFUSE, no_diffuse);
+        }
+    }
+    if(!winning_flags.specular){
+        for(int i = 0; i < 5; i++){
+            glLightfv(GL_LIGHT2 + i, GL_SPECULAR, no_specular);
+        }
+    }
+}
+
 void Game::draw_lights(){
     glEnable(GL_LIGHTING);
+    setup_lights();
+
 
     // Default ambient light
     ofVec4f ambient_light = ofVec4f(0.1, 0.1, 0.1, 1);
@@ -331,8 +395,8 @@ void Game::draw_lights(){
         sun_ambient = ofVec4f(0.0001, 0.0001, 0.0001, 1);
     }
     else if(light_state == DAY){
-        sun_diffuse = ofVec4f(0.9, 0.9, 0.9, 1);
-        sun_specular = ofVec4f(0.005, 0.005, 0.005, 1);
+        sun_diffuse = ofVec4f(1, 1, 1, 1);
+        sun_specular = ofVec4f(1, 1, 1, 1);
         sun_ambient = ofVec4f(0.1, 0.1, 0.1, 1);
     }
     else if (light_state == NIGHT){      
@@ -344,6 +408,8 @@ void Game::draw_lights(){
     glLightfv(GL_LIGHT0, GL_SPECULAR, sun_specular.getPtr());
     glLightfv(GL_LIGHT0, GL_AMBIENT, sun_ambient.getPtr());
 
+    check_light_flags();  
+    
     sun_direction_theta = 45;
     sun_direction = ofVec4f(
         -cos(sun_direction_theta * PI / 180),
@@ -389,7 +455,6 @@ void Game::draw_lights(){
     int cur_light = GL_LIGHT2;
     int win_col = 1;
     while(cur_light < GL_LIGHT2 + 5){
-        
         if(global.filled_slots[win_col]){
             glLightfv(cur_light, GL_POSITION, winning_positions[cur_light - GL_LIGHT2]);
             glEnable(cur_light);
@@ -400,6 +465,8 @@ void Game::draw_lights(){
         win_col += 3;
         cur_light++;
     }
+
+    disable_lights();
 }
 
 void Game::draw_scene(){
@@ -531,6 +598,23 @@ void Game::try_move(int new_row, int new_column) {
     }
 }
 
+void Game::reset_light_flags(){
+    sun_flags.ambient = true;
+    sun_flags.diffuse = true;
+    sun_flags.specular = true;
+
+    frog_flags.ambient = true;
+    frog_flags.diffuse = true;
+    frog_flags.specular = true;
+
+    winning_flags.ambient = true;
+    winning_flags.diffuse = true;
+    winning_flags.specular = true;
+    
+    sun_light_on = true;
+    frog_light_on = true;
+    winning_light_on = true;
+}
 
 void Game::key_pressed(int key) {
     if(key == '+'){
@@ -557,11 +641,59 @@ void Game::key_pressed(int key) {
     if(key == 'h' || key == 'H'){
         if(difficulty == EASY){
             difficulty = HARD;
+            global.base_element_speed = 100;
         }
         else if(difficulty == HARD){
             difficulty = EASY;
+            global.base_element_speed = 50;
         }
     }
+
+    switch(key){
+        case OF_KEY_F1:
+            sun_flags.ambient = !sun_flags.ambient;
+            break;
+        case OF_KEY_F2:
+            sun_flags.diffuse = !sun_flags.diffuse;
+            break;
+        case OF_KEY_F3:
+            sun_flags.specular = !sun_flags.specular;
+            break;
+        case OF_KEY_F4:
+            frog_flags.ambient = !frog_flags.ambient;
+            break;
+        case OF_KEY_F5:
+            frog_flags.diffuse = !frog_flags.diffuse;
+            break;
+        case OF_KEY_F6:
+            frog_flags.specular = !frog_flags.specular;
+            break;
+        case OF_KEY_F7:
+            winning_flags.ambient = !winning_flags.ambient;
+            break;
+        case OF_KEY_F8:
+            winning_flags.diffuse = !winning_flags.diffuse;
+            break;
+        case OF_KEY_F9:
+            winning_flags.specular = !winning_flags.specular;
+            cout << winning_flags.ambient << " " << winning_flags.diffuse << " " << winning_flags.specular << endl;
+            break;
+        case('7'):
+            sun_light_on = !sun_light_on;
+            break;
+        case('8'):
+            frog_light_on = !frog_light_on;
+            break;
+        case('9'):
+            winning_light_on = !winning_light_on;
+            break;
+        default:
+            break;
+    }
+    if(key == 'r' || key == 'R'){
+        reset_light_flags();
+    }
+
 
     switch(state) {
         case WELCOME_SCREEN:
