@@ -26,6 +26,11 @@ enum LightState {
     NIGHT
 };
 
+enum Difficulty {
+    EASY,
+    HARD
+};
+
 class Game{
     public: 
         Game();
@@ -35,7 +40,6 @@ class Game{
         /*
         ******** Core game definitions *******
         */
-        std::bitset<20> filled_slots;
         int finished_frogs_count; 
         GameState state;
         int cur_stage;
@@ -48,6 +52,7 @@ class Game{
         void course_setup(int stage);
         bool check_collision(ofVec3f &pos1, ofVec3f &dim1, ofVec3f &pos2, ofVec3f &dim2);
         void reset_player();
+        Difficulty difficulty;
 
 
         /*
@@ -128,8 +133,8 @@ class Game{
         ofVec4f frog_ambient;
 
         // The winning spots have a spot light
-        ofVec3f winning_positions[5];
-        ofVec3f winning_direction;
+        GLfloat winning_positions[5][4];
+        GLfloat winning_direction[4];
         ofVec4f winning_ambient;
         ofVec4f winning_diffuse;
         ofVec4f winning_specular;

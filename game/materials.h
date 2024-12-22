@@ -32,7 +32,8 @@ enum material{
     GOLD_PARTICLE,
     WATER_PARTICLE,
 
-    GREEN_GRASS
+    GREEN_GRASS,
+    BRICK
 };  
 
 inline void load_material(enum material mat){
@@ -41,9 +42,9 @@ inline void load_material(enum material mat){
     GLfloat frog_skin_spec[] = {0.0, 0.5, 0.0, 1.0};
     GLfloat frog_skin_coef = 0.5;
 
-    GLfloat frog_tongue_amb[] = {1.0, 0.0, 0.0, 1.0};
-    GLfloat frog_tongue_diff[] = {1.0, 0.0, 0.0, 1.0};
-    GLfloat frog_tongue_spec[] = {1.0, 0.0, 0.0, 1.0};
+    GLfloat frog_tongue_amb[] = {0.3, 0.0, 0.0, 1.0};
+    GLfloat frog_tongue_diff[] = {0.8, 0.0, 0.0, 1.0};
+    GLfloat frog_tongue_spec[] = {0.8, 0.0, 0.0, 1.0};
     GLfloat frog_tongue_coef = 0.5;
 
     GLfloat eye_amb[] = {0.1, 0.1, 0.1, 1.0};
@@ -96,9 +97,9 @@ inline void load_material(enum material mat){
     GLfloat window_spec[] = {0.1, 0.1, 0.1, 1.0};
     GLfloat window_coef = 0.5;
 
-    GLfloat tire_amb[] = {0.1, 0.1, 0.1, 1.0};
-    GLfloat tire_diff[] = {0.1, 0.1, 0.1, 1.0};
-    GLfloat tire_spec[] = {0.1, 0.1, 0.1, 1.0};
+    GLfloat tire_amb[] = {0, 0, 0, 1.0};
+    GLfloat tire_diff[] = {0, 0, 0, 1.0};
+    GLfloat tire_spec[] = {0, 0, 0, 1.0};
     GLfloat tire_coef = 0.5;
 
     GLfloat rim_amb[] = {0.1, 0.1, 0.1, 1.0};
@@ -131,9 +132,9 @@ inline void load_material(enum material mat){
     GLfloat water_spec[] = {0.0, 0.0, 0.5, 1.0};
     GLfloat water_coef = 0.5;
 
-    GLfloat road_amb[] = {0.3, 0.3, 0.3, 1.0};
-    GLfloat road_diff[] = {0.7, 0.7, 0.7, 1.0};
-    GLfloat road_spec[] = {0.3, 0.3, 0.3, 1.0};
+    GLfloat road_amb[] = {0.4, 0.4, 0.4, 1.0};
+    GLfloat road_diff[] = {0.9, 0.9, 0.9, 1.0};
+    GLfloat road_spec[] = {0.9, 0.9, 0.9, 1.0};
     GLfloat road_coef = 0.5;
 
     GLfloat purple_grass_amb[] = {0.7, 0.0, 0.7, 1.0};
@@ -164,6 +165,10 @@ inline void load_material(enum material mat){
     GLfloat green_grass_spec[] = {0, 0.5, 0, 1.0};
     GLfloat green_grass_coef = 0.5;
 
+    GLfloat brick_amb[] = {0.5, 0.0, 0.0, 1.0};
+    GLfloat brick_diff[] = {0.7, 0.0, 0.0, 1.0};
+    GLfloat brick_spec[] = {0.5, 0.0, 0.0, 1.0};
+    GLfloat brick_coef = 0.5;
 
     switch(mat){
         case (FROG_SKIN):
@@ -309,6 +314,12 @@ inline void load_material(enum material mat){
             glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, green_grass_diff);
             glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, green_grass_spec);
             glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, green_grass_coef);
+            break;
+        case (BRICK):
+            glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, brick_amb);
+            glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, brick_diff);
+            glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, brick_spec);
+            glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, brick_coef);
             break;
         default:
             break;

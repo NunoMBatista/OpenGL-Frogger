@@ -20,10 +20,12 @@ public:
     GLfloat base_element_speed;    
     GLfloat platform_offset_y;
 
+    std::bitset<20> filled_slots;
 
     void load_textures();
     ofImage life;
-    ofImage purple_grass;
+    ofImage brick;
+    ofImage cobble;
     ofImage tunnel;
     ofImage green_grass;
 };

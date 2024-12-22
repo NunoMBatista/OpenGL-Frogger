@@ -23,6 +23,7 @@ Game::Game() {
     course_setup(cur_stage);
     finished_frogs_count = 0;
     lives = 3;
+    difficulty = EASY;
 
     // Create the player 
     player_position = global.grid->get_grid_position(0, global.grid_columns / 2); // Start at middle of first row
@@ -82,16 +83,8 @@ void Game::setup_lights(){
     glLightModeli(GL_LIGHT_MODEL_LOCAL_VIEWER, GL_TRUE);
     //glLightModeli(GL_LIGHT_MODEL_TWO_SIDE, GL_FALSE);
 
-    // ambient_light = ofVec4f(0.1, 0.1, 0.1, 1);
-    // glLightModelfv(GL_LIGHT_MODEL_AMBIENT, ambient_light.getPtr());
-    
     // Initialize the sun directional light
-    sun_diffuse = ofVec4f(1, 1, 1, 1);
-    sun_specular = ofVec4f(1, 1, 1, 1);
-    //sun_diffuse = ofVec4f(0.3, 0.3, 0.3, 1);
-    //sun_specular = ofVec4f(0.3, 0.3, 0.3, 1);
     sun_ambient = ofVec4f(0.1, 0.1, 0.1, 1);
-    
     sun_direction_theta = 0;
     glLightfv(GL_LIGHT0, GL_DIFFUSE, sun_diffuse.getPtr());
     glLightfv(GL_LIGHT0, GL_SPECULAR, sun_specular.getPtr());
@@ -101,31 +94,64 @@ void Game::setup_lights(){
     frog_diffuse = ofVec4f(1, 1, 1, 1);
     frog_specular = ofVec4f(1, 1, 1, 1);
     frog_ambient = ofVec4f(0.1, 0.1, 0.1, 1);
+    glLightfv(GL_LIGHT7, GL_DIFFUSE, frog_diffuse.getPtr());
+    glLightfv(GL_LIGHT7, GL_SPECULAR, frog_specular.getPtr());
+    glLightfv(GL_LIGHT7, GL_AMBIENT, frog_ambient.getPtr());
+    glLightf(GL_LIGHT7, GL_CONSTANT_ATTENUATION, 0.1);
+    glLightf(GL_LIGHT7, GL_LINEAR_ATTENUATION, 0.0001);
+    glLightf(GL_LIGHT7, GL_QUADRATIC_ATTENUATION, 0.00001);
+
+    // Initialize the frog spotlight
     glLightfv(GL_LIGHT1, GL_DIFFUSE, frog_diffuse.getPtr());
     glLightfv(GL_LIGHT1, GL_SPECULAR, frog_specular.getPtr());
     glLightfv(GL_LIGHT1, GL_AMBIENT, frog_ambient.getPtr());
-    // Add attenuation for shorter range
     glLightf(GL_LIGHT1, GL_CONSTANT_ATTENUATION, 0.1);
     glLightf(GL_LIGHT1, GL_LINEAR_ATTENUATION, 0.0001);
-    glLightf(GL_LIGHT1, GL_QUADRATIC_ATTENUATION, 0.0001);
+    glLightf(GL_LIGHT1, GL_QUADRATIC_ATTENUATION, 0.00001);
+    GLfloat frog_light_cutoff = 45;
+    GLfloat frog_light_exponent = 2;
+    glLightf(GL_LIGHT1, GL_SPOT_CUTOFF, frog_light_cutoff);
+    glLightf(GL_LIGHT1, GL_SPOT_EXPONENT, frog_light_exponent);
+
+    
+    // Initialize the winning spots
+    winning_positions[0][0] = 50;
+    winning_positions[0][1] = 75;
+    winning_positions[0][2] = 700;
+    winning_positions[0][3] = 1;
+
+    winning_direction[0] = 0;
+    winning_direction[1] = -1;
+    winning_direction[2] = 0;
+    winning_direction[3] = 1;
 
     // Initialize the winning spot spot light
     winning_diffuse = ofVec4f(1, 1, 1, 1);
     winning_specular = ofVec4f(1, 1, 1, 1);
-    winning_ambient = ofVec4f(1, 1, 1, 1);
-    winning_cutoff = 15;
-    winning_exponent = 30;
-    glLightfv(GL_LIGHT2, GL_DIFFUSE, winning_diffuse.getPtr());
-    glLightfv(GL_LIGHT2, GL_SPECULAR, winning_specular.getPtr());
-    glLightf(GL_LIGHT2, GL_SPOT_CUTOFF, winning_cutoff);
-    glLightf(GL_LIGHT2, GL_SPOT_EXPONENT, winning_exponent);
-    //glLightfv(GL_LIGHT2, GL_SPOT_DIRECTION, winning_direction.getPtr());
+    winning_ambient = ofVec4f(0.2, 0.2, 0.2, 1);
+    winning_cutoff = 25.0;
+    winning_exponent = 64;
 
-    // attenuation for the spot light
-    glLightf(GL_LIGHT2, GL_CONSTANT_ATTENUATION, 1);
-    glLightf(GL_LIGHT2, GL_LINEAR_ATTENUATION, 0);
-    glLightf(GL_LIGHT2, GL_QUADRATIC_ATTENUATION, 0);
+    GLint cur_light = GL_LIGHT2;
+    for(int i = 1; i < 5; i++){
+        winning_positions[i][0] = 50 + i * 150;
+        winning_positions[i][1] = 100;
+        winning_positions[i][2] = 700;
+        winning_positions[i][3] = 1;
+    }
+    while(cur_light < GL_LIGHT2 + 5){
+        glLightfv(cur_light, GL_POSITION, winning_positions[cur_light - GL_LIGHT2]);
+        glLightfv(cur_light, GL_SPOT_DIRECTION, winning_direction);
+        glLightfv(cur_light, GL_AMBIENT, winning_ambient.getPtr());
+        glLightfv(cur_light, GL_DIFFUSE, winning_diffuse.getPtr());
+        glLightfv(cur_light, GL_SPECULAR, winning_specular.getPtr());
     
+        glLightf(cur_light, GL_SPOT_CUTOFF, winning_cutoff);
+        glLightf(cur_light, GL_SPOT_EXPONENT, winning_exponent);
+        glLightf(cur_light, GL_CONSTANT_ATTENUATION, 0.1);
+
+        cur_light++;
+    }
 }
 
 void Game::apply_camera() { 
@@ -197,7 +223,7 @@ void Game::update() {
     if((player_row >= global.grid->top_river_row + 1) && (!frog->is_moving)){
         // Copy the frog to the finished_frogs vector
         
-        filled_slots[player_column] = 1;
+        global.filled_slots[player_column] = 1;
         finished_frogs_count++;
 
         Frog* finished_frog = new Frog(*frog);
@@ -290,18 +316,30 @@ void Game::draw() {
 }
 
 void Game::draw_lights(){
-
     glEnable(GL_LIGHTING);
 
-    if(light_state == DAY){
+    // Default ambient light
+    ofVec4f ambient_light = ofVec4f(0.1, 0.1, 0.1, 1);
+    glLightModelfv(GL_LIGHT_MODEL_AMBIENT, ambient_light.getPtr());
+
+    if(difficulty == HARD){
+        GLfloat black[] = {0.05f, 0.05f, 0.05f, 1.0f};  
+        glLightModelfv(GL_LIGHT_MODEL_AMBIENT, black);  
+
+        sun_diffuse = ofVec4f(0.005, 0.005, 0.005, 1);
+        sun_specular = ofVec4f(0.005, 0.005, 0.005, 1);
+        sun_ambient = ofVec4f(0.0001, 0.0001, 0.0001, 1);
+    }
+    else if(light_state == DAY){
         sun_diffuse = ofVec4f(0.9, 0.9, 0.9, 1);
-        sun_specular = ofVec4f(0.9, 0.9, 0.9, 1);
+        sun_specular = ofVec4f(0.005, 0.005, 0.005, 1);
+        sun_ambient = ofVec4f(0.1, 0.1, 0.1, 1);
     }
     else if (light_state == NIGHT){      
         sun_diffuse = ofVec4f(0.1, 0.1, 0.1, 1);
         sun_specular = ofVec4f(0.1, 0.1, 0.1, 1);
+        sun_ambient = ofVec4f(0.1, 0.1, 0.1, 1);
     }
-    sun_ambient = ofVec4f(0.1, 0.1, 0.1, 1);
     glLightfv(GL_LIGHT0, GL_DIFFUSE, sun_diffuse.getPtr());
     glLightfv(GL_LIGHT0, GL_SPECULAR, sun_specular.getPtr());
     glLightfv(GL_LIGHT0, GL_AMBIENT, sun_ambient.getPtr());
@@ -313,34 +351,55 @@ void Game::draw_lights(){
         -sin(sun_direction_theta * PI / 180),
         0
     );
-
     glLightfv(GL_LIGHT0, GL_POSITION, sun_direction.getPtr());
     glEnable(GL_LIGHT0);
 
-    if(light_state == DAY){
+    if(difficulty == HARD){
+        // The frog light is now a spotlight pointing to frog eye direction
+
+        GLfloat frog_pos[4];
+
+        frog_pos[0] = frog->position.x;
+        frog_pos[1] = -10;
+        frog_pos[2] = frog->position.z;
+        frog_pos[3] = 1;
+        
+        glPushMatrix();
+            glRotatef(frog->rotation, 0, 1, 0);
+            GLfloat spot_direction[4] = {0, 0, 1, 1};
+            glLightfv(GL_LIGHT1, GL_SPOT_DIRECTION, spot_direction);
+        glPopMatrix();
+        glLightfv(GL_LIGHT1, GL_POSITION, frog_pos);
+        glLightfv(GL_LIGHT7, GL_POSITION, frog_pos);
+        
+        glDisable(GL_LIGHT7);
+        glEnable(GL_LIGHT1);
+    }
+    else if(light_state == DAY){
+        glDisable(GL_LIGHT7);
         glDisable(GL_LIGHT1);
     }
     else if(light_state == NIGHT){
-        glLightfv(GL_LIGHT1, GL_POSITION, frog->position.getPtr());
-        glEnable(GL_LIGHT1);
+        glLightfv(GL_LIGHT7, GL_POSITION, frog->position.getPtr());
+        
+        glDisable(GL_LIGHT1);
+        glEnable(GL_LIGHT7);
     }
 
-    winning_positions[0] = global.grid->get_grid_position(5, 5);
-    winning_positions[0].y = 2.5;
-
-    winning_direction = ofVec3f(0, -1, 0);
-
-    glLightfv(GL_LIGHT2, GL_POSITION, winning_positions[0].getPtr());
-    glLightfv(GL_LIGHT2, GL_SPOT_DIRECTION, winning_direction.getPtr());
-    glEnable(GL_LIGHT2);
-
-    // Draw a cube at the winning position
-    glPushMatrix();
-        glTranslatef(winning_positions[0].x, winning_positions[0].y, winning_positions[0].z);
-        ofSetColor(0, 255, 0);
-        ofDrawBox(0, 0, 0, 10);
-    glPopMatrix();
-
+    int cur_light = GL_LIGHT2;
+    int win_col = 1;
+    while(cur_light < GL_LIGHT2 + 5){
+        
+        if(global.filled_slots[win_col]){
+            glLightfv(cur_light, GL_POSITION, winning_positions[cur_light - GL_LIGHT2]);
+            glEnable(cur_light);
+        }
+        else{
+            glDisable(cur_light);
+        }
+        win_col += 3;
+        cur_light++;
+    }
 }
 
 void Game::draw_scene(){
@@ -423,12 +482,12 @@ void Game::try_move(int new_row, int new_column) {
     // When the frog is moving into the goal row (top_river_row + 1)
     if(new_row == global.grid->top_river_row + 1){
         // Can only move to the last row if it's a goal position and it's empty
-        if(((closest_column - 1) % 3 != 0) || (filled_slots[closest_column])){
+        if(((closest_column - 1) % 3 != 0) || (global.filled_slots[closest_column])){
             return;
         }
         else{
             // Mark the slot as filled
-            filled_slots[closest_column] = true;
+            global.filled_slots[closest_column] = true;
             // Move into the goal row
             new_position = global.grid->get_grid_position(new_row, closest_column);
             frog->start_move(player_position, new_position);
@@ -493,6 +552,14 @@ void Game::key_pressed(int key) {
         }
         else if(light_state == DAY){
             light_state = NIGHT;
+        }
+    }
+    if(key == 'h' || key == 'H'){
+        if(difficulty == EASY){
+            difficulty = HARD;
+        }
+        else if(difficulty == HARD){
+            difficulty = EASY;
         }
     }
 
@@ -660,8 +727,24 @@ void Game::draw_hud() {
         glPushMatrix();
             glLoadIdentity();
 
-            glColor3f(0, 1, 0);            
+            glColor3f(0, 1, 0);  
+            if(difficulty == HARD){
+                glColor3f(1, 0, 0);
+                font.drawString("Hard mode", gw()/2 - font.stringWidth("Hard mode") / 2, 90);
+            }
+            else if(light_state == NIGHT){
+                glColor3f(0, 0, 0.7);
+                font.drawString("Night mode", gw()/2 - font.stringWidth("Night mode") / 2, 90);
+            }
+            else if(light_state == DAY){
+                glColor3f(1, 1, 0);
+                font.drawString("Day mode", gw()/2 - font.stringWidth("Day mode") / 2, 90);
+            }
+
+            if(difficulty == HARD) glColor3f(1, 0, 0);
+            else glColor3f(0, 1, 0);
             font_small.drawString("Lives:", 30, 30);
+            
             glColor3f(1, 1, 1);
 
             // Draw lives
@@ -670,6 +753,12 @@ void Game::draw_hud() {
                     glTranslatef(font_small.stringWidth("Lives:      ") + 30 + i * 40, 26, 0);
                     // life.resize(20, 20);
                     // life.draw(-10, -10);
+
+
+                    if(difficulty == HARD){
+                        glColor3f(1, 0, 0);
+                    }
+
                     global.life.draw(-10, -10, 20, 20);
                     //global.grid->purple_grass.draw(-10, -10, 20, 20);
                 glPopMatrix();
@@ -677,7 +766,10 @@ void Game::draw_hud() {
 
 
             // Draw stage number
-            glColor3f(0, 1, 0);            
+            glColor3f(0, 1, 0);  
+            if(difficulty == HARD){
+                glColor3f(1, 0, 0);
+            }
             string stage_text = "Stage: " + ofToString(cur_stage);
             font_small.drawString(stage_text, 30, 60);
 
@@ -747,7 +839,7 @@ void Game::draw_welcome_screen() {
 
             // Draw title and instructions
             glColor3f(0, 1, 0);
-            font_big.drawString("FROGGER", gw()/2 - font_big.stringWidth("FROGGER")/2, gh()/2 - 100);
+            font_big.drawString("FROGGER", gw()/2 - font_big.stringWidth("FROGGER")/2, gh()/2 - 300);
             glColor3f(1, 1, 1);
 
             std::string instructions = 
@@ -756,11 +848,12 @@ void Game::draw_welcome_screen() {
                 "             2: Perspective view\n"
                 "             3: First-Person view\n\n"
                 "Use 'WASD' or the arrow keys to move\n\n"
-                "             F: Toggle fullscreen\n\n"
-                "             N: Toggle night mode\n\n"
-                "       +/-: Adjust the field of view\n\n"
+                "             F: Toggle fullscreen\n"
+                "             N: Toggle night mode\n"
+                "       +/-: Adjust the field of view\n"
+                "             H: Toggle hard mode\n\n"
                 "           <Press SPACE to start>";
-            font.drawString(instructions, gw()/2 - font.stringWidth("Use 'WASD' or arrow keys to move")/2, gh()/2);
+            font.drawString(instructions, gw()/2 - font.stringWidth("Use 'WASD' or arrow keys to move")/2, gh()/2 - 100);
 
             // Restore matrices
             glMatrixMode(GL_PROJECTION);
@@ -825,5 +918,5 @@ void Game::clean_stage(){
     platforms.clear();
     dead_frogs.clear();
     finished_frogs.clear();
-    filled_slots.reset();
+    global.filled_slots.reset();
 }
