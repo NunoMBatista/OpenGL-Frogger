@@ -411,12 +411,13 @@ void Game::draw_lights(){
     check_light_flags();  
     
     sun_direction_theta = 45;
-    sun_direction = ofVec4f(
-        -cos(sun_direction_theta * PI / 180),
-        -cos(sun_direction_theta * PI / 180),
-        -sin(sun_direction_theta * PI / 180),
-        0
-    );
+    // sun_direction = ofVec4f(
+    //     -cos(sun_direction_theta * PI / 180),
+    //     -cos(sun_direction_theta * PI / 180),
+    //     -sin(sun_direction_theta * PI / 180),
+    //     0
+    // );
+    sun_direction = ofVec4f(1, -1, 1, 0);
     glLightfv(GL_LIGHT0, GL_POSITION, sun_direction.getPtr());
     glEnable(GL_LIGHT0);
 

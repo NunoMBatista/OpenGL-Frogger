@@ -72,7 +72,7 @@ inline void cube_texture_unit(int N){
 		glTranslatef(0, 0.5, 0);
 		glRotatef(90, 1, 0, 0);
 		glBegin(GL_QUADS);
-			glNormal3f(0, 1, 0);
+			glNormal3f(0, 0, 1);
 			rect_texture_unit_aux(N);
 		glEnd();
 	glPopMatrix();
@@ -80,7 +80,7 @@ inline void cube_texture_unit(int N){
 		glTranslatef(0, -0.5, 0);
 		glRotatef(270, 1, 0, 0);
 		glBegin(GL_QUADS);
-			glNormal3f(0, -1, 0);
+			glNormal3f(0, 0, -1);
 			rect_texture_unit_aux(N);
 		glEnd();
 	glPopMatrix();
@@ -88,7 +88,7 @@ inline void cube_texture_unit(int N){
 		glTranslatef(0.5, 0, 0);
 		glRotatef(90, 0, 1, 0);
 		glBegin(GL_QUADS);
-			glNormal3f(1, 0, 0);
+			glNormal3f(0, 0, 1);
 			rect_texture_unit_aux(N);
 		glEnd();
 	glPopMatrix();
@@ -96,7 +96,7 @@ inline void cube_texture_unit(int N){
 		glTranslatef(-0.5, 0, 0);
 		glRotatef(270, 0, 1, 0);
 		glBegin(GL_QUADS);
-			glNormal3f(-1, 0, 0);
+			glNormal3f(0, 0, -1);
 			rect_texture_unit_aux(N);
 		glEnd();
 	glPopMatrix();
