@@ -28,6 +28,9 @@ public:
     ofImage cobble;
     ofImage tunnel;
     ofImage green_grass;
+    ofImage water_tex;
+    ofImage log_tex;
+    ofImage turtle_tex;
 };
 
 

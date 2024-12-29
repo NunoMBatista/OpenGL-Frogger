@@ -39,21 +39,37 @@ void Platform::update(GLfloat delta_time){
 }
 
 void Platform::draw_log(){
+    load_material(LOG);
+    glEnable(GL_TEXTURE_2D);
+
+    glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+    global.log_tex.bind();
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
     glPushMatrix();
-        load_material(LOG);
-        glPushMatrix();
-            glTranslatef(position.x, -global.grid_size/2, position.z);
-            glScalef(dimensions.x, dimensions.y, dimensions.z);
-            cube_unit(0.3, 0.15, 0.0);
-        glPopMatrix();
-    
-        load_material(LOG);
-        glPushMatrix();
-            glTranslatef(position.x, -global.grid_size/2, position.z);
-            glScalef(dimensions.x*1.03, dimensions.y*0.9, dimensions.z*0.9);
-            cube_unit(0.55, 0.4, 0.1);
-        glPopMatrix();
+        glTranslatef(position.x, -global.grid_size/2, position.z);
+        glScalef(dimensions.x, dimensions.y, dimensions.z);
+        cube_texture_unit(4, 1);
     glPopMatrix();
+
+    global.log_tex.unbind();
+    glDisable(GL_TEXTURE_2D);
+
+    load_material(LOG);
+    glEnable(GL_TEXTURE_2D);
+    glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+    global.log_tex.bind();
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+    glPushMatrix();
+        glTranslatef(position.x, -global.grid_size/2, position.z);
+        glScalef(dimensions.x*1.03, dimensions.y*0.9, dimensions.z*0.9);
+        cube_texture_unit(1, 1);
+    glPopMatrix();
+
+    global.log_tex.unbind();
+    glDisable(GL_TEXTURE_2D);
 }
 
 void Platform::draw_turtle(){
@@ -81,28 +97,50 @@ void Platform::draw_turtle(){
 
 void Platform::draw_shell(){
     load_material(TURTLE_SHELL);
+    glEnable(GL_TEXTURE_2D);
+    glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+    global.turtle_tex.bind();
     glPushMatrix();
         glScalef(turtle_shell_dimensions.x*0.9, turtle_shell_dimensions.y*0.9, turtle_shell_dimensions.z);
-        cube_unit(0.7, 0, 0);
+        cube_texture_unit(1, 1);
     glPopMatrix();
+    global.turtle_tex.unbind();
+    glDisable(GL_TEXTURE_2D);
 
     load_material(TURTLE_SHELL);
+    glEnable(GL_TEXTURE_2D);
+    glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+    global.turtle_tex.bind();
     glPushMatrix();
         glScalef(turtle_shell_dimensions.x, turtle_shell_dimensions.y*0.9, turtle_shell_dimensions.z*0.9);
-        cube_unit(0.7, 0, 0);
+        cube_texture_unit(1, 1);
     glPopMatrix();
+    global.turtle_tex.unbind();
+    glDisable(GL_TEXTURE_2D);
 
     load_material(TURTLE_SHELL);
+    glEnable(GL_TEXTURE_2D);
+    glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+    global.turtle_tex.bind();
     glPushMatrix();
         glScalef(turtle_shell_dimensions.x*0.8, turtle_shell_dimensions.y*0.9, turtle_shell_dimensions.z*0.8);
-        cube_unit(0.7, 0, 0);
+        cube_texture_unit(1, 1);
     glPopMatrix();
+    global.turtle_tex.unbind();    
+    glDisable(GL_TEXTURE_2D);
 
     load_material(TURTLE_SHELL);
+    glEnable(GL_TEXTURE_2D);
+    glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+    global.turtle_tex.bind();
     glPushMatrix();
         glScalef(turtle_shell_dimensions.x*0.6, turtle_shell_dimensions.y, turtle_shell_dimensions.z*0.6);
-        cube_unit(0.7, 0, 0);
+        cube_texture_unit(1, 1);
     glPopMatrix();
+    global.turtle_tex.unbind();
+
+    glDisable(GL_TEXTURE_2D);
+
 }
 
 void Platform::draw_head(){

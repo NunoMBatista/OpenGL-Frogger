@@ -33,5 +33,6 @@ class Grid {
         int grid_rows;
         int grid_columns;
         float grid_size;
-  
+
+        float water_offset;
 };

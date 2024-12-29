@@ -1,4 +1,3 @@
-
 #include "grid.h"
 #include "../utils/cg_extras.h"
 #include "../utils/cg_drawing_extras.h"
@@ -14,6 +13,8 @@ Grid::Grid(int rows, int columns, float size) {
 
     top_road_row = 6;
     bottom_road_row = 1;
+
+    water_offset = 0.0f;
 }
 
 void Grid::draw(){
@@ -38,16 +39,41 @@ void Grid::draw(){
                             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
                             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
-                            rect_texture_unit(2);
+                            rect_texture_unit(2, 2);
 
                         global.cobble.unbind();
                         glDisable(GL_TEXTURE_2D);
                     }
                     // Draw the river
                     else if((i <= top_river_row) && (i >= bottom_river_row)){
-                        glScalef(grid_size, 1, grid_size);
-                        load_material(WATER);
-                        cube_unit(0, 0, 0.5);
+                        // Update texture offset
+                        //water_offset += 0.01f; 
+                        water_offset += 0.005f * ofGetLastFrameTime();
+
+                        glRotatef(90, 1, 0, 0);
+                        glScalef(grid_size, grid_size, 1);
+                        glMatrixMode(GL_TEXTURE);
+                        glPushMatrix();
+                            glTranslatef(water_offset, 0.0f, 0.0f); 
+
+
+                            glPushMatrix();
+                                load_material(WATER);
+                                glEnable(GL_TEXTURE_2D);
+                                glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+                                global.water_tex.bind();
+
+                                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+                                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+                                cube_texture_unit(1, 1);
+                            glPopMatrix();
+
+                            global.water_tex.unbind();
+                            glDisable(GL_TEXTURE_2D);
+
+                        glPopMatrix();
+                        glMatrixMode(GL_MODELVIEW);
                     }
                     // Draw the final row (green)
                     else if(i == grid_rows - 1){
@@ -66,7 +92,7 @@ void Grid::draw(){
                             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
                             //glScalef(grid_size, grid_size, grid_size);
-                            cube_texture_unit(4);
+                            cube_texture_unit(1, 4);
                         glPopMatrix();
                         global.green_grass.unbind();
                         glDisable(GL_TEXTURE_2D);
@@ -78,11 +104,25 @@ void Grid::draw(){
                         
                             if(global.filled_slots[j]){
                                 load_material(GOLD_PARTICLE);
+                                cube_unit(1, 1, 0);
                             }
                             else{
-                                load_material(GREEN_GRASS);
+                                glPushMatrix();
+                                    load_material(TURTLE_SKIN);
+                                    glEnable(GL_TEXTURE_2D);
+                                    
+
+                                    glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+                                    global.green_grass.bind();
+
+                                    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+                                    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+                                    cube_texture_unit(2, 2);
+                                glPopMatrix();
+                                global.green_grass.unbind();
+                                glDisable(GL_TEXTURE_2D);
                             }
-                            cube_unit(1, 1, 0);
                         }
                         else{
                             glScalef(grid_size, grid_size*4, grid_size);
@@ -98,7 +138,7 @@ void Grid::draw(){
                                 glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
                                 //glScalef(grid_size, grid_size, grid_size);
-                                cube_texture_unit(4);
+                                cube_texture_unit(1, 4);
                             glPopMatrix();
                             global.green_grass.unbind();
                             glDisable(GL_TEXTURE_2D);
@@ -120,7 +160,7 @@ void Grid::draw(){
                             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
                             //glScalef(grid_size, grid_size, grid_size);
-                            cube_texture_unit(1);
+                            cube_texture_unit(1, 1);
                         glPopMatrix();
                         global.tunnel.unbind();
                         glDisable(GL_TEXTURE_2D);
@@ -142,9 +182,9 @@ void Grid::draw(){
                         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
                         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
-                        glRotatef(90, 1, 0, 0);
-                        glScalef(grid_size, grid_size, 1);
-                        cube_texture_unit(1);
+                        //glRotatef(90, 1, 0, 0);
+                        glScalef(grid_size, 0.2, grid_size);
+                        cube_texture_unit(1, 1);
                         //rect_texture_unit(2);
                     
                         global.brick.unbind();
@@ -179,11 +219,31 @@ void Grid::draw(){
                     }  
 
                     else if(i >= bottom_river_row && i <= top_river_row){
-                        load_material(WATER);
+                        glTranslatef(0, -0.5, 0);
+                        glRotatef(90, 1, 0, 0);
+                        glMatrixMode(GL_TEXTURE);
                         glPushMatrix();
-                            glTranslatef(0, -1, 0);
-                            cube_unit(0, 0, 0.5);
+                            glTranslatef(water_offset, 0.0f, 0.0f); 
+
+                            glPushMatrix();
+                                load_material(WATER);
+                                glEnable(GL_TEXTURE_2D);
+                                glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+                                global.water_tex.bind();
+
+                                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+                                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+                                cube_texture_unit(1, 1);
+                            glPopMatrix();
+
+                            global.water_tex.unbind();
+                            glDisable(GL_TEXTURE_2D);
+
                         glPopMatrix();
+                        glMatrixMode(GL_MODELVIEW);
+
+
                     }
                     else if(i >= top_river_row && j >= 0 && j < grid_columns){
                         load_material(GREEN_GRASS);
@@ -204,7 +264,7 @@ void Grid::draw(){
                             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
                             //glScalef(grid_size, grid_size, grid_size);
-                            cube_texture_unit(1);
+                            cube_texture_unit(1, 1);
                         glPopMatrix();
                         global.tunnel.unbind();
                         glDisable(GL_TEXTURE_2D);
@@ -246,7 +306,7 @@ void Grid::draw(){
                             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
                             //glScalef(grid_size, grid_size, grid_size);
-                            cube_texture_unit(1);
+                            cube_texture_unit(1, 1);
                         glPopMatrix();
                         global.tunnel.unbind();
                         glDisable(GL_TEXTURE_2D);
@@ -270,9 +330,28 @@ void Grid::draw(){
                     ofVec3f position = get_grid_position(i, j);
                     glPushMatrix();
                         glTranslatef(position.x, position.y, position.z);
-                        glScalef(grid_size, grid_size, grid_size);
-                        load_material(WATER);
-                        cube_unit(0, 0, 0.5);
+                        glRotatef(90, 0, 1, 0);
+                        glScalef(grid_size, grid_size, 1);
+                        glMatrixMode(GL_TEXTURE);
+                        glPushMatrix();
+                            glTranslatef(0, -water_offset, 0); 
+                            glPushMatrix();
+                                load_material(WATER);
+                                glEnable(GL_TEXTURE_2D);
+                                glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+                                global.water_tex.bind();
+
+                                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+                                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+                                cube_texture_unit(1, 1);
+                            glPopMatrix();
+
+                            global.water_tex.unbind();
+                            glDisable(GL_TEXTURE_2D);
+
+                        glPopMatrix();
+                        glMatrixMode(GL_MODELVIEW);
                     glPopMatrix();
                 }
             }

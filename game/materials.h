@@ -58,34 +58,35 @@ inline void load_material(enum material mat){
     GLfloat pupil_coef = 0.5;
 
     // Car 1 red
-    GLfloat car_body_1_amb[] = {0.5, 0.0, 0.0, 1.0};
-    GLfloat car_body_1_diff[] = {0.7, 0.0, 0.0, 1.0};
-    GLfloat car_body_1_spec[] = {0.5, 0.0, 0.0, 1.0};
-    GLfloat car_body_1_coef = 0.5;
+    GLfloat car_body_1_amb[] = { 0.0f,0.0f,0.0f,1.0f};
+    GLfloat car_body_1_diff[] ={ 0.5f,0.0f,0.0f,1.0f};
+    GLfloat car_body_1_spec[] ={0.7f,0.6f,0.6f,1.0f };
+    GLfloat car_body_1_coef = 32.0f;
 
     // Car 2 grey
-    GLfloat car_body_2_amb[] = {0.5, 0.5, 0.5, 1.0};
-    GLfloat car_body_2_diff[] = {0.7, 0.7, 0.7, 1.0};
-    GLfloat car_body_2_spec[] = {0.5, 0.5, 0.5, 1.0};
-    GLfloat car_body_2_coef = 0.5;
+    GLfloat car_body_2_amb[] = {0.25f, 0.25f, 0.25f, 1.0f  };
+    GLfloat car_body_2_diff[] = {0.4f, 0.4f, 0.4f, 1.0f };
+    GLfloat car_body_2_spec[] = {0.774597f, 0.774597f, 0.774597f, 1.0f };
+    GLfloat car_body_2_coef = 76.8f;
 
     // Car 3 blue
-    GLfloat car_body_3_amb[] = {0.0, 0.0, 0.5, 1.0};
-    GLfloat car_body_3_diff[] = {0.0, 0.0, 0.7, 1.0};
-    GLfloat car_body_3_spec[] = {0.0, 0.0, 0.5, 1.0};
-    GLfloat car_body_3_coef = 0.5;
+    GLfloat car_body_3_amb[] = { 0.0f,0.1f,0.06f ,1.0f                   }; 
+    GLfloat car_body_3_diff[] ={ 0.0f,0.50980392f,0.50980392f,1.0f       }; 
+    GLfloat car_body_3_spec[] ={0.50196078f,0.50196078f,0.50196078f,1.0f }; 
+    GLfloat car_body_3_coef = 32.0f;
 
     // Car 4 purple
-    GLfloat car_body_4_amb[] = {0.5, 0.0, 0.5, 1.0};
-    GLfloat car_body_4_diff[] = {0.7, 0.0, 0.7, 1.0};
-    GLfloat car_body_4_spec[] = {0.5, 0.0, 0.5, 1.0};
-    GLfloat car_body_4_coef = 0.5;
+    GLfloat car_body_4_amb[] = { 0.05375f, 0.05f, 0.06625f, 0.82f      };
+    GLfloat car_body_4_diff[] = { 0.18275f, 0.17f, 0.22525f, 0.82f      };
+    GLfloat car_body_4_spec[] = {0.332741f, 0.328634f, 0.346435f, 0.82f };
+    GLfloat car_body_4_coef = 38.4f;
 
     // Car 5 yellow
-    GLfloat car_body_5_amb[] = {0.5, 0.5, 0.0, 1.0};
-    GLfloat car_body_5_diff[] = {0.7, 0.7, 0.0, 1.0};
-    GLfloat car_body_5_spec[] = {0.5, 0.5, 0.0, 1.0};
-    GLfloat car_body_5_coef = 0.5;
+    GLfloat car_body_5_amb[] = { 0.329412f, 0.223529f, 0.027451f,1.0f };
+    GLfloat car_body_5_diff[] = { 0.780392f, 0.568627f, 0.113725f, 1.0f };
+    GLfloat car_body_5_spec[] = { 0.992157f, 0.941176f, 0.807843f, 1.0f };
+    GLfloat car_body_5_coef = 27.8974f;
+
 
     GLfloat head_light_amb[] = {0.1, 0.1, 0.1, 1.0};
     GLfloat head_light_diff[] = {1.0, 1.0, 0.0, 1.0};
@@ -97,20 +98,20 @@ inline void load_material(enum material mat){
     GLfloat window_spec[] = {0.1, 0.1, 0.1, 1.0};
     GLfloat window_coef = 0.5;
 
-    GLfloat tire_amb[] = {0, 0, 0, 1.0};
-    GLfloat tire_diff[] = {0, 0, 0, 1.0};
-    GLfloat tire_spec[] = {0, 0, 0, 1.0};
-    GLfloat tire_coef = 0.5;
+    GLfloat tire_amb[] = { 0.02f, 0.02f, 0.02f, 1.0f };
+    GLfloat tire_diff[] ={ 0.01f, 0.01f, 0.01f, 1.0f };
+    GLfloat tire_spec[] ={0.4f, 0.4f, 0.4f, 1.0f     };
+    GLfloat tire_coef = 10.0f;
 
-    GLfloat rim_amb[] = {0.1, 0.1, 0.1, 1.0};
-    GLfloat rim_diff[] = {0.7, 0.7, 0.7, 1.0};
-    GLfloat rim_spec[] = {0.1, 0.1, 0.1, 1.0};
-    GLfloat rim_coef = 0.5;
+    GLfloat rim_amb[] =  { 0.0f,0.0f,0.0f,1.0f   };  
+    GLfloat rim_diff[] = { 0.55f,0.55f,0.55f,1.0f}; 
+    GLfloat rim_spec[] = {0.70f,0.70f,0.70f,1.0f }; 
+    GLfloat rim_coef = 32.0f;
 
-    GLfloat radiator_amb[] = {0.1, 0.1, 0.1, 1.0};
-    GLfloat radiator_diff[] = {0.7, 0.7, 0.7, 1.0};
-    GLfloat radiator_spec[] = {0.1, 0.1, 0.1, 1.0};
-    GLfloat radiator_coef = 0.5;
+    GLfloat radiator_amb[] = { 0.0f,0.0f,0.0f,1.0f   };  
+    GLfloat radiator_diff[] = { 0.55f,0.55f,0.55f,1.0f}; 
+    GLfloat radiator_spec[] = {0.70f,0.70f,0.70f,1.0f }; 
+    GLfloat radiator_coef = 32.0f;
 
     GLfloat log_amb[] = {0.5, 0.3, 0.0, 1.0};
     GLfloat log_diff[] = {0.7, 0.5, 0.0, 1.0};
@@ -118,19 +119,19 @@ inline void load_material(enum material mat){
     GLfloat log_coef = 0.5;
 
     GLfloat turtle_shell_amb[] = {0.7, 0.0, 0.0, 1.0};
-    GLfloat turtle_shell_diff[] = {0.7, 0.0, 0.0, 1.0};
+    GLfloat turtle_shell_diff[] = {1, 0.0, 0.0, 1.0};
     GLfloat turtle_shell_spec[] = {0.7, 0.0, 0.0, 1.0};
     GLfloat turtle_shell_coef = 0.5;
+    
+    GLfloat turtle_skin_amb[] = {0.0f, 0.05f, 0.0f, 1.0f};
+    GLfloat turtle_skin_diff[] = {0.4f, 0.5f, 0.4f, 1.0f};
+    GLfloat turtle_skin_spec[] = {0.04f, 0.7f, 0.04f, 1.0f};
+    GLfloat turtle_skin_coef = 10.0f;
 
-    GLfloat turtle_skin_amb[] = {0.0, 0.5, 0.0, 1.0};
-    GLfloat turtle_skin_diff[] = {0.0, 0.7, 0.0, 1.0};
-    GLfloat turtle_skin_spec[] = {0.0, 0.5, 0.0, 1.0};
-    GLfloat turtle_skin_coef = 0.5;
-
-    GLfloat water_amb[] = {0.0, 0.0, 0.5, 1.0};
-    GLfloat water_diff[] = {0.0, 0.0, 0.7, 1.0};
-    GLfloat water_spec[] = {0.0, 0.0, 0.5, 1.0};
-    GLfloat water_coef = 0.5;
+    GLfloat water_amb[] = {0.0, 0.5, 0.5, 1.0};
+    GLfloat water_diff[] = {0.0, 0.7, 0.7, 1.0};
+    GLfloat water_spec[] = {0.0, 0.5, 0.5, 1.0};
+    GLfloat water_coef = 0.8;
 
     GLfloat road_amb[] = {0.4, 0.4, 0.4, 1.0};
     GLfloat road_diff[] = {0.9, 0.9, 0.9, 1.0};
@@ -160,13 +161,13 @@ inline void load_material(enum material mat){
     GLfloat water_particle_spec[] = {0.0, 0.0, blue_shade, 1.0};
     GLfloat water_particle_coef = 0.5;
 
-    GLfloat green_grass_amb[] = {0, 0.5, 0, 1.0};
-    GLfloat green_grass_diff[] = {0, 0.7, 0, 1.0};  
-    GLfloat green_grass_spec[] = {0, 0.5, 0, 1.0};
+    GLfloat green_grass_amb[] = {0, 0.3, 0, 1.0};
+    GLfloat green_grass_diff[] = {0, 0.5, 0, 1.0};  
+    GLfloat green_grass_spec[] = {0, 0.3, 0, 1.0};
     GLfloat green_grass_coef = 0.5;
 
-    GLfloat brick_amb[] = {0.5, 0.0, 0.0, 1.0};
-    GLfloat brick_diff[] = {0.7, 0.0, 0.0, 1.0};
+    GLfloat brick_amb[] = {0.4, 0.0, 0.0, 1.0};
+    GLfloat brick_diff[] = {0.6, 0.0, 0.0, 1.0};
     GLfloat brick_spec[] = {0.5, 0.0, 0.0, 1.0};
     GLfloat brick_coef = 0.5;
 

@@ -84,7 +84,7 @@ void Game::setup_lights(){
     //glLightModeli(GL_LIGHT_MODEL_TWO_SIDE, GL_FALSE);
 
     // Initialize the sun directional light
-    sun_ambient = ofVec4f(0.1, 0.1, 0.1, 1);
+    sun_ambient = ofVec4f(0.3, 0.3, 0.3, 1);
     sun_direction_theta = 0;
     glLightfv(GL_LIGHT0, GL_DIFFUSE, sun_diffuse.getPtr());
     glLightfv(GL_LIGHT0, GL_SPECULAR, sun_specular.getPtr());
@@ -397,7 +397,7 @@ void Game::draw_lights(){
     else if(light_state == DAY){
         sun_diffuse = ofVec4f(1, 1, 1, 1);
         sun_specular = ofVec4f(1, 1, 1, 1);
-        sun_ambient = ofVec4f(0.1, 0.1, 0.1, 1);
+        sun_ambient = ofVec4f(0.3, 0.3, 0.3, 1);
     }
     else if (light_state == NIGHT){      
         sun_diffuse = ofVec4f(0.1, 0.1, 0.1, 1);
@@ -410,14 +410,16 @@ void Game::draw_lights(){
 
     check_light_flags();  
     
-    sun_direction_theta = 45;
+    sun_direction_theta = 60;
     // sun_direction = ofVec4f(
-    //     -cos(sun_direction_theta * PI / 180),
-    //     -cos(sun_direction_theta * PI / 180),
-    //     -sin(sun_direction_theta * PI / 180),
-    //     0
+    //    -cos(sun_direction_theta * PI / 180),
+    //    -cos(sun_direction_theta * PI / 180),
+    //    -sin(sun_direction_theta * PI / 180),
+    //    0
     // );
-    sun_direction = ofVec4f(1, -1, 1, 0);
+
+    sun_direction = ofVec4f(1, -1, -1, 0);
+    
     glLightfv(GL_LIGHT0, GL_POSITION, sun_direction.getPtr());
     glEnable(GL_LIGHT0);
 

@@ -23,81 +23,86 @@ inline void rectFill_unit() {
 	glEnd();
 }
 
-inline void rect_texture_unit_aux(int N){
+inline void rect_texture_unit_aux(int N, int M) {
 	// Bottom left - start of tiling
-	glTexCoord2f(0, N);
+	glTexCoord2f(0, M);
 	glVertex3f(-0.5, -0.5, 0);
 	
-	// Top left - N tiles up
+	// Top left - M tiles up
 	glTexCoord2f(0, 0);
 	glVertex3f(-0.5, 0.5, 0);
 	
-	// Top right - N tiles across and up  
+	// Top right - N tiles across and M tiles up  
 	glTexCoord2f(N, 0);
 	glVertex3f(0.5, 0.5, 0);
 
-	// Bottom right - N tiles across
-	glTexCoord2f(N, N); 
+	// Bottom right - N tiles across and M tiles down
+	glTexCoord2f(N, M); 
 	glVertex3f(0.5, -0.5, 0);
 }
 
-inline void rect_texture_unit(int N){
-    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-    glBegin(GL_QUADS);
-        glNormal3f(0, 0, 1);
-		rect_texture_unit_aux(N);
-    glEnd();
+inline void rect_texture_unit(int N, int M) {
+	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+	glBegin(GL_QUADS);
+		glNormal3f(0, 0, 1);
+		rect_texture_unit_aux(N, M);
+	glEnd();
 }
 
-
-inline void cube_texture_unit(int N){
+inline void cube_texture_unit(int N, int M) {
 	glEnable(GL_NORMALIZE);
-    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+
 	glPushMatrix();
 		glTranslatef(0, 0, 0.5);
 		glBegin(GL_QUADS);
 			glNormal3f(0, 0, 1);
-			rect_texture_unit_aux(N);
+			rect_texture_unit_aux(N, M);
 		glEnd();
 	glPopMatrix();
+
 	glPushMatrix();
 		glTranslatef(0, 0, -0.5);
 		glRotatef(180, 0, 1, 0);
 		glBegin(GL_QUADS);
-			glNormal3f(0, 0, -1);
-			rect_texture_unit_aux(N);
+			glNormal3f(0, 0, 1);
+			rect_texture_unit_aux(N, M);
 		glEnd();
 	glPopMatrix();
+
 	glPushMatrix();
 		glTranslatef(0, 0.5, 0);
 		glRotatef(90, 1, 0, 0);
 		glBegin(GL_QUADS);
 			glNormal3f(0, 0, 1);
-			rect_texture_unit_aux(N);
+			rect_texture_unit_aux(N, M);
 		glEnd();
 	glPopMatrix();
+
 	glPushMatrix();
 		glTranslatef(0, -0.5, 0);
 		glRotatef(270, 1, 0, 0);
 		glBegin(GL_QUADS);
-			glNormal3f(0, 0, -1);
-			rect_texture_unit_aux(N);
+			glNormal3f(0, 0, 1);
+			rect_texture_unit_aux(N, M);
 		glEnd();
 	glPopMatrix();
+
 	glPushMatrix();
 		glTranslatef(0.5, 0, 0);
 		glRotatef(90, 0, 1, 0);
 		glBegin(GL_QUADS);
 			glNormal3f(0, 0, 1);
-			rect_texture_unit_aux(N);
+			rect_texture_unit_aux(N, M);
 		glEnd();
 	glPopMatrix();
+
 	glPushMatrix();
 		glTranslatef(-0.5, 0, 0);
 		glRotatef(270, 0, 1, 0);
 		glBegin(GL_QUADS);
-			glNormal3f(0, 0, -1);
-			rect_texture_unit_aux(N);
+			glNormal3f(0, 0, 1);
+			rect_texture_unit_aux(N, M);
 		glEnd();
 	glPopMatrix();
 }

@@ -23,14 +23,16 @@ void Global::load_textures(){
     life.setImageType(OF_IMAGE_COLOR_ALPHA);
 
     brick.load("brick.png");
-    brick.setImageType(OF_IMAGE_COLOR_ALPHA);
 
     tunnel.load("tunnel.png");
-    tunnel.setImageType(OF_IMAGE_COLOR_ALPHA);
 
     green_grass.load("green_grass.jpg");
-    green_grass.setImageType(OF_IMAGE_COLOR_ALPHA);
 
     cobble.load("cobble.png");
-    cobble.setImageType(OF_IMAGE_COLOR_ALPHA);
+
+    water_tex.load("water.png");
+
+    log_tex.load("log.jpg");
+
+    turtle_tex.load("turtle_shell.png");
 }
